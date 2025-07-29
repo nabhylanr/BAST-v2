@@ -2,14 +2,34 @@ import React, { useState, useRef } from 'react';
 
 const PDFFormFiller = () => {
   const [pdfFile, setPdfFile] = useState(null);
-  const [nama, setNama] = useState('');
-  const [nomorTelepon, setNomorTelepon] = useState('');
+  const [formData, setFormData] = useState({
+    namaNasabah: '',
+    alamat: '',
+    namaImplementor: '',
+    tanggalHari: '',
+    tanggalBulan: '',
+    tanggalTahun: '',
+    nama: '',
+    instansiUnit: '',
+    contact: ''
+  });
   const [pdfUrl, setPdfUrl] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [coordinates, setCoordinates] = useState({ x: 268, y: 678, page: 1 });
-  const [phoneCoordinates, setPhoneCoordinates] = useState({ x: 268, y: 650, page: 1 });
   const [totalPages, setTotalPages] = useState(0);
   const fileInputRef = useRef(null);
+
+  // Koordinat untuk setiap field
+  const [coordinates, setCoordinates] = useState({
+    namaNasabah: { x: 150, y: 700, page: 1 },
+    alamat: { x: 150, y: 670, page: 1 },
+    namaImplementor: { x: 150, y: 640, page: 1 },
+    tanggalHari: { x: 150, y: 610, page: 1 },
+    tanggalBulan: { x: 200, y: 610, page: 1 },
+    tanggalTahun: { x: 280, y: 610, page: 1 },
+    nama: { x: 150, y: 580, page: 1 },
+    instansiUnit: { x: 150, y: 550, page: 1 },
+    contact: { x: 150, y: 520, page: 1 }
+  });
 
   const styles = {
     container: {
@@ -19,7 +39,7 @@ const PDFFormFiller = () => {
       fontFamily: 'system-ui, -apple-system, sans-serif'
     },
     wrapper: {
-      maxWidth: '1024px',
+      maxWidth: '1200px',
       margin: '0 auto'
     },
     card: {
@@ -62,10 +82,7 @@ const PDFFormFiller = () => {
       padding: '24px',
       textAlign: 'center',
       cursor: 'pointer',
-      transition: 'border-color 0.2s',
-      ':hover': {
-        borderColor: '#6366f1'
-      }
+      transition: 'border-color 0.2s'
     },
     uploadIcon: {
       width: '48px',
@@ -95,29 +112,42 @@ const PDFFormFiller = () => {
       outline: 'none',
       transition: 'border-color 0.2s, box-shadow 0.2s'
     },
-    grid: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr 1fr',
-      gap: '16px'
+    smallInput: {
+      width: '100%',
+      padding: '6px 12px',
+      border: '1px solid #d1d5db',
+      borderRadius: '6px',
+      fontSize: '14px',
+      outline: 'none'
     },
-    gridTwo: {
+    grid: {
       display: 'grid',
       gridTemplateColumns: '1fr 1fr',
       gap: '16px'
     },
+    gridThree: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr 1fr',
+      gap: '12px'
+    },
+    gridFour: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr 1fr 1fr',
+      gap: '8px'
+    },
     numberInput: {
       width: '100%',
-      padding: '8px 12px',
+      padding: '6px 8px',
       border: '1px solid #d1d5db',
-      borderRadius: '6px',
-      fontSize: '14px'
+      borderRadius: '4px',
+      fontSize: '12px'
     },
     selectInput: {
       width: '100%',
-      padding: '8px 12px',
+      padding: '6px 8px',
       border: '1px solid #d1d5db',
-      borderRadius: '6px',
-      fontSize: '14px',
+      borderRadius: '4px',
+      fontSize: '12px',
       backgroundColor: 'white'
     },
     buttonGroup: {
@@ -158,7 +188,7 @@ const PDFFormFiller = () => {
     },
     iframe: {
       width: '100%',
-      height: '384px',
+      height: '400px',
       border: '1px solid #e5e7eb',
       borderRadius: '8px'
     },
@@ -179,26 +209,6 @@ const PDFFormFiller = () => {
       margin: 0,
       paddingLeft: '16px'
     },
-    altCard: {
-      backgroundColor: '#eff6ff',
-      border: '1px solid #93c5fd',
-      borderRadius: '8px',
-      padding: '16px',
-      marginTop: '16px'
-    },
-    presetButtons: {
-      display: 'flex',
-      flexWrap: 'wrap',
-      gap: '8px'
-    },
-    presetButton: {
-      padding: '4px 12px',
-      borderRadius: '4px',
-      border: 'none',
-      fontSize: '12px',
-      cursor: 'pointer',
-      transition: 'background-color 0.2s'
-    },
     pageInfo: {
       backgroundColor: '#f3f4f6',
       padding: '8px 12px',
@@ -215,13 +225,23 @@ const PDFFormFiller = () => {
       marginBottom: '16px'
     },
     coordinateTitle: {
-      fontSize: '16px',
+      fontSize: '14px',
       fontWeight: '500',
       color: '#1f2937',
       marginBottom: '12px',
       display: 'flex',
       alignItems: 'center',
       gap: '8px'
+    },
+    dateContainer: {
+      display: 'flex',
+      gap: '8px',
+      alignItems: 'center'
+    },
+    dateLabel: {
+      fontSize: '12px',
+      color: '#6b7280',
+      textAlign: 'center'
     }
   };
 
@@ -232,7 +252,6 @@ const PDFFormFiller = () => {
       const url = URL.createObjectURL(file);
       setPdfUrl(url);
       
-      // Count total pages
       try {
         const { PDFDocument } = await import('https://cdn.skypack.dev/pdf-lib@^1.17.1');
         const arrayBuffer = await file.arrayBuffer();
@@ -248,65 +267,67 @@ const PDFFormFiller = () => {
     }
   };
 
+  const updateFormData = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const updateCoordinates = (field, axis, value) => {
+    setCoordinates(prev => ({
+      ...prev,
+      [field]: {
+        ...prev[field],
+        [axis]: axis === 'page' ? parseInt(value) : parseInt(value) || 0
+      }
+    }));
+  };
+
   const handleGeneratePDF = async () => {
-    if (!pdfFile || !nama.trim() || !nomorTelepon.trim()) {
-      alert('Please upload PDF and enter nama & nomor telepon');
+    const requiredFields = ['namaNasabah', 'alamat', 'namaImplementor', 'tanggalHari', 'tanggalBulan', 'tanggalTahun', 'nama', 'instansiUnit', 'contact'];
+    const missingFields = requiredFields.filter(field => !formData[field].trim());
+    
+    if (!pdfFile || missingFields.length > 0) {
+      alert('Please upload PDF and fill all required fields');
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      // Load PDF-lib from CDN
       const { PDFDocument, rgb } = await import('https://cdn.skypack.dev/pdf-lib@^1.17.1');
       
-      // Read the uploaded PDF
       const arrayBuffer = await pdfFile.arrayBuffer();
       const pdfDoc = await PDFDocument.load(arrayBuffer);
-      
-      // Get all pages
       const pages = pdfDoc.getPages();
       
-      // Validate page numbers
-      const namaPageIndex = coordinates.page - 1;
-      const phonePageIndex = phoneCoordinates.page - 1;
-      
-      if (namaPageIndex >= pages.length || namaPageIndex < 0) {
-        alert(`Halaman ${coordinates.page} untuk nama tidak tersedia! PDF ini hanya memiliki ${pages.length} halaman.`);
-        setIsProcessing(false);
-        return;
+      // Validate all pages
+      for (const [field, coord] of Object.entries(coordinates)) {
+        const pageIndex = coord.page - 1;
+        if (pageIndex >= pages.length || pageIndex < 0) {
+          alert(`Halaman ${coord.page} untuk ${field} tidak tersedia! PDF ini hanya memiliki ${pages.length} halaman.`);
+          setIsProcessing(false);
+          return;
+        }
       }
       
-      if (phonePageIndex >= pages.length || phonePageIndex < 0) {
-        alert(`Halaman ${phoneCoordinates.page} untuk nomor telepon tidak tersedia! PDF ini hanya memiliki ${pages.length} halaman.`);
-        setIsProcessing(false);
-        return;
-      }
-      
-      // Get the specific pages
-      const namaPage = pages[namaPageIndex];
-      const phonePage = pages[phonePageIndex];
-      
-      // Add nama lengkap to the specified page and coordinates
-      namaPage.drawText(nama, {
-        x: coordinates.x,
-        y: coordinates.y,
-        size: 10,
-        color: rgb(0, 0, 0),
+      // Add text to PDF
+      Object.entries(formData).forEach(([field, value]) => {
+        if (value.trim()) {
+          const coord = coordinates[field];
+          const page = pages[coord.page - 1];
+          
+          page.drawText(value, {
+            x: coord.x,
+            y: coord.y,
+            size: 10,
+            color: rgb(0, 0, 0),
+          });
+        }
       });
       
-      // Add nomor telepon to the specified page and coordinates
-      phonePage.drawText(nomorTelepon, {
-        x: phoneCoordinates.x,
-        y: phoneCoordinates.y,
-        size: 10,
-        color: rgb(0, 0, 0),
-      });
-      
-      // Save the PDF
       const pdfBytes = await pdfDoc.save();
-      
-      // Create download link
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -314,7 +335,6 @@ const PDFFormFiller = () => {
       link.download = `filled-form-${Date.now()}.pdf`;
       link.click();
       
-      // Clean up
       URL.revokeObjectURL(url);
       
     } catch (error) {
@@ -328,11 +348,29 @@ const PDFFormFiller = () => {
   const resetForm = () => {
     setPdfFile(null);
     setPdfUrl(null);
-    setNama('');
-    setNomorTelepon('');
+    setFormData({
+      namaNasabah: '',
+      alamat: '',
+      namaImplementor: '',
+      tanggalHari: '',
+      tanggalBulan: '',
+      tanggalTahun: '',
+      nama: '',
+      instansiUnit: '',
+      contact: ''
+    });
     setTotalPages(0);
-    setCoordinates({ x: 268, y: 678, page: 1 });
-    setPhoneCoordinates({ x: 268, y: 650, page: 1 });
+    setCoordinates({
+      namaNasabah: { x: 150, y: 700, page: 1 },
+      alamat: { x: 150, y: 670, page: 1 },
+      namaImplementor: { x: 150, y: 640, page: 1 },
+      tanggalHari: { x: 150, y: 610, page: 1 },
+      tanggalBulan: { x: 200, y: 610, page: 1 },
+      tanggalTahun: { x: 280, y: 610, page: 1 },
+      nama: { x: 150, y: 580, page: 1 },
+      instansiUnit: { x: 150, y: 550, page: 1 },
+      contact: { x: 150, y: 520, page: 1 }
+    });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -343,12 +381,58 @@ const PDFFormFiller = () => {
     for (let i = 1; i <= totalPages; i++) {
       options.push(
         <option key={i} value={i}>
-          Halaman {i}
+          Hal {i}
         </option>
       );
     }
     return options;
   };
+
+  const CoordinateControl = ({ field, label, emoji }) => (
+    <div style={styles.coordinateGroup}>
+      <div style={styles.coordinateTitle}>
+        <span>{emoji}</span>
+        {label}
+      </div>
+      <div style={styles.gridFour}>
+        <div>
+          <label style={styles.label}>Halaman</label>
+          <select
+            value={coordinates[field].page}
+            onChange={(e) => updateCoordinates(field, 'page', e.target.value)}
+            style={styles.selectInput}
+            disabled={totalPages === 0}
+          >
+            {totalPages > 0 ? generatePageOptions() : <option>Upload PDF</option>}
+          </select>
+        </div>
+        <div>
+          <label style={styles.label}>X</label>
+          <input
+            type="number"
+            value={coordinates[field].x}
+            onChange={(e) => updateCoordinates(field, 'x', e.target.value)}
+            style={styles.numberInput}
+          />
+        </div>
+        <div>
+          <label style={styles.label}>Y</label>
+          <input
+            type="number"
+            value={coordinates[field].y}
+            onChange={(e) => updateCoordinates(field, 'y', e.target.value)}
+            style={styles.numberInput}
+          />
+        </div>
+        <div>
+          <label style={styles.label}>Preview</label>
+          <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
+            ({coordinates[field].x}, {coordinates[field].y})
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div style={styles.container}>
@@ -358,7 +442,7 @@ const PDFFormFiller = () => {
             <svg style={styles.icon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <h1 style={styles.title}>PDF Form Filler Multi-Page</h1>
+            <h1 style={styles.title}>PDF Form Filler - Extended</h1>
           </div>
           
           {/* Upload Section */}
@@ -392,161 +476,236 @@ const PDFFormFiller = () => {
           </div>
 
           {/* Form Section */}
-          <div style={styles.gridTwo}>
-            <div>
-              <label style={styles.label}>Nama yang akan diisi</label>
-              <input
-                type="text"
-                value={nama}
-                onChange={(e) => setNama(e.target.value)}
-                placeholder="Masukkan nama..."
-                style={styles.input}
-              />
-            </div>
-            <div>
-              <label style={styles.label}>Nomor Telepon yang akan diisi</label>
-              <input
-                type="text"
-                value={nomorTelepon}
-                onChange={(e) => setNomorTelepon(e.target.value)}
-                placeholder="Masukkan nomor telepon..."
-                style={styles.input}
-              />
-            </div>
-          </div>
-
-          {/* Preset Positions */}
           <div style={styles.section}>
-            <label style={styles.label}>Preset Posisi</label>
-            <div style={styles.presetButtons}>
-              <button
-                onClick={() => setCoordinates({ x: 268, y: 678, page: 1 })}
-                style={{
-                  ...styles.presetButton,
-                  backgroundColor: '#dbeafe',
-                  color: '#1e40af'
-                }}
-              >
-                Nama Hal.1 (268, 678)
-              </button>
-              <button
-                onClick={() => setPhoneCoordinates({ x: 268, y: 650, page: 1 })}
-                style={{
-                  ...styles.presetButton,
-                  backgroundColor: '#dcfce7',
-                  color: '#166534'
-                }}
-              >
-                Telepon Hal.1 (268, 650)
-              </button>
-              <button
-                onClick={() => setCoordinates({ x: 100, y: 750, page: 2 })}
-                style={{
-                  ...styles.presetButton,
-                  backgroundColor: '#fef3c7',
-                  color: '#92400e'
-                }}
-              >
-                Nama Hal.2 (100, 750)
-              </button>
-              <button
-                onClick={() => setPhoneCoordinates({ x: 100, y: 720, page: 2 })}
-                style={{
-                  ...styles.presetButton,
-                  backgroundColor: '#fce7f3',
-                  color: '#be185d'
-                }}
-              >
-                Telepon Hal.2 (100, 720)
-              </button>
+            <h3 style={{fontSize: '18px', fontWeight: '500', marginBottom: '16px', color: '#1f2937'}}>Data yang akan diisi</h3>
+            
+            <div style={styles.grid}>
+              <div>
+                <label style={styles.label}>Nama Nasabah</label>
+                <input
+                  type="text"
+                  value={formData.namaNasabah}
+                  onChange={(e) => updateFormData('namaNasabah', e.target.value)}
+                  placeholder="Masukkan nama nasabah..."
+                  style={styles.input}
+                />
+              </div>
+              <div>
+                <label style={styles.label}>Alamat</label>
+                <input
+                  type="text"
+                  value={formData.alamat}
+                  onChange={(e) => updateFormData('alamat', e.target.value)}
+                  placeholder="Masukkan alamat..."
+                  style={styles.input}
+                />
+              </div>
+            </div>
+
+            <div style={styles.grid}>
+              <div>
+                <label style={styles.label}>Nama Implementor</label>
+                <input
+                  type="text"
+                  value={formData.namaImplementor}
+                  onChange={(e) => updateFormData('namaImplementor', e.target.value)}
+                  placeholder="Masukkan nama implementor..."
+                  style={styles.input}
+                />
+              </div>
+              <div>
+                <label style={styles.label}>Tanggal Implementasi</label>
+                <div style={styles.dateContainer}>
+                  <div style={{flex: 1}}>
+                    <input
+                      type="text"
+                      value={formData.tanggalHari}
+                      onChange={(e) => updateFormData('tanggalHari', e.target.value)}
+                      placeholder="08"
+                      maxLength="2"
+                      style={styles.smallInput}
+                    />
+                    <div style={styles.dateLabel}>Hari</div>
+                  </div>
+                  <div style={{flex: 1}}>
+                    <input
+                      type="text"
+                      value={formData.tanggalBulan}
+                      onChange={(e) => updateFormData('tanggalBulan', e.target.value)}
+                      placeholder="Juli"
+                      style={styles.smallInput}
+                    />
+                    <div style={styles.dateLabel}>Bulan</div>
+                  </div>
+                  <div style={{flex: 1}}>
+                    <input
+                      type="text"
+                      value={formData.tanggalTahun}
+                      onChange={(e) => updateFormData('tanggalTahun', e.target.value)}
+                      placeholder="2025"
+                      maxLength="4"
+                      style={styles.smallInput}
+                    />
+                    <div style={styles.dateLabel}>Tahun</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={styles.gridThree}>
+              <div>
+                <label style={styles.label}>Nama</label>
+                <input
+                  type="text"
+                  value={formData.nama}
+                  onChange={(e) => updateFormData('nama', e.target.value)}
+                  placeholder="Masukkan nama..."
+                  style={styles.input}
+                />
+              </div>
+              <div>
+                <label style={styles.label}>Instansi Unit</label>
+                <input
+                  type="text"
+                  value={formData.instansiUnit}
+                  onChange={(e) => updateFormData('instansiUnit', e.target.value)}
+                  placeholder="Masukkan instansi unit..."
+                  style={styles.input}
+                />
+              </div>
+              <div>
+                <label style={styles.label}>Contact</label>
+                <input
+                  type="text"
+                  value={formData.contact}
+                  onChange={(e) => updateFormData('contact', e.target.value)}
+                  placeholder="Masukkan contact..."
+                  style={styles.input}
+                />
+              </div>
             </div>
           </div>
 
-          {/* Position Controls */}
-          <div style={styles.coordinateGroup}>
-            <div style={styles.coordinateTitle}>
-              <span>📝</span>
-              Posisi Nama Lengkap
+          {/* Coordinate Controls */}
+          <div style={styles.section}>
+            <h3 style={{fontSize: '18px', fontWeight: '500', marginBottom: '16px', color: '#1f2937'}}>Koordinat Posisi Field</h3>
+            
+            <CoordinateControl field="namaNasabah" label="Nama Nasabah" emoji="👤" />
+            <CoordinateControl field="alamat" label="Alamat" emoji="🏠" />
+            <CoordinateControl field="namaImplementor" label="Nama Implementor" emoji="⚡" />
+            
+            <div style={styles.coordinateGroup}>
+              <div style={styles.coordinateTitle}>
+                <span>📅</span>
+                Tanggal Implementasi (3 Box Terpisah)
+              </div>
+              <div style={styles.gridThree}>
+                <div>
+                  <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#4338ca'}}>Hari</div>
+                  <div style={styles.gridFour}>
+                    <select
+                      value={coordinates.tanggalHari.page}
+                      onChange={(e) => updateCoordinates('tanggalHari', 'page', e.target.value)}
+                      style={styles.selectInput}
+                      disabled={totalPages === 0}
+                    >
+                      {totalPages > 0 ? generatePageOptions() : <option>Upload PDF</option>}
+                    </select>
+                    <input
+                      type="number"
+                      value={coordinates.tanggalHari.x}
+                      onChange={(e) => updateCoordinates('tanggalHari', 'x', e.target.value)}
+                      style={styles.numberInput}
+                      placeholder="X"
+                    />
+                    <input
+                      type="number"
+                      value={coordinates.tanggalHari.y}
+                      onChange={(e) => updateCoordinates('tanggalHari', 'y', e.target.value)}
+                      style={styles.numberInput}
+                      placeholder="Y"
+                    />
+                    <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
+                      ({coordinates.tanggalHari.x}, {coordinates.tanggalHari.y})
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#059669'}}>Bulan</div>
+                  <div style={styles.gridFour}>
+                    <select
+                      value={coordinates.tanggalBulan.page}
+                      onChange={(e) => updateCoordinates('tanggalBulan', 'page', e.target.value)}
+                      style={styles.selectInput}
+                      disabled={totalPages === 0}
+                    >
+                      {totalPages > 0 ? generatePageOptions() : <option>Upload PDF</option>}
+                    </select>
+                    <input
+                      type="number"
+                      value={coordinates.tanggalBulan.x}
+                      onChange={(e) => updateCoordinates('tanggalBulan', 'x', e.target.value)}
+                      style={styles.numberInput}
+                      placeholder="X"
+                    />
+                    <input
+                      type="number"
+                      value={coordinates.tanggalBulan.y}
+                      onChange={(e) => updateCoordinates('tanggalBulan', 'y', e.target.value)}
+                      style={styles.numberInput}
+                      placeholder="Y"
+                    />
+                    <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
+                      ({coordinates.tanggalBulan.x}, {coordinates.tanggalBulan.y})
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#dc2626'}}>Tahun</div>
+                  <div style={styles.gridFour}>
+                    <select
+                      value={coordinates.tanggalTahun.page}
+                      onChange={(e) => updateCoordinates('tanggalTahun', 'page', e.target.value)}
+                      style={styles.selectInput}
+                      disabled={totalPages === 0}
+                    >
+                      {totalPages > 0 ? generatePageOptions() : <option>Upload PDF</option>}
+                    </select>
+                    <input
+                      type="number"
+                      value={coordinates.tanggalTahun.x}
+                      onChange={(e) => updateCoordinates('tanggalTahun', 'x', e.target.value)}
+                      style={styles.numberInput}
+                      placeholder="X"
+                    />
+                    <input
+                      type="number"
+                      value={coordinates.tanggalTahun.y}
+                      onChange={(e) => updateCoordinates('tanggalTahun', 'y', e.target.value)}
+                      style={styles.numberInput}
+                      placeholder="Y"
+                    />
+                    <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
+                      ({coordinates.tanggalTahun.x}, {coordinates.tanggalTahun.y})
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div style={styles.grid}>
-              <div>
-                <label style={styles.label}>Halaman</label>
-                <select
-                  value={coordinates.page}
-                  onChange={(e) => setCoordinates(prev => ({ ...prev, page: parseInt(e.target.value) }))}
-                  style={styles.selectInput}
-                  disabled={totalPages === 0}
-                >
-                  {totalPages > 0 ? generatePageOptions() : <option>Upload PDF dulu</option>}
-                </select>
-              </div>
-              <div>
-                <label style={styles.label}>Posisi X (horizontal)</label>
-                <input
-                  type="number"
-                  value={coordinates.x}
-                  onChange={(e) => setCoordinates(prev => ({ ...prev, x: parseInt(e.target.value) || 0 }))}
-                  style={styles.numberInput}
-                />
-              </div>
-              <div>
-                <label style={styles.label}>Posisi Y (vertical)</label>
-                <input
-                  type="number"
-                  value={coordinates.y}
-                  onChange={(e) => setCoordinates(prev => ({ ...prev, y: parseInt(e.target.value) || 0 }))}
-                  style={styles.numberInput}
-                />
-              </div>
-            </div>
-          </div>
 
-          <div style={styles.coordinateGroup}>
-            <div style={styles.coordinateTitle}>
-              <span>📞</span>
-              Posisi Nomor Telepon
-            </div>
-            <div style={styles.grid}>
-              <div>
-                <label style={styles.label}>Halaman</label>
-                <select
-                  value={phoneCoordinates.page}
-                  onChange={(e) => setPhoneCoordinates(prev => ({ ...prev, page: parseInt(e.target.value) }))}
-                  style={styles.selectInput}
-                  disabled={totalPages === 0}
-                >
-                  {totalPages > 0 ? generatePageOptions() : <option>Upload PDF dulu</option>}
-                </select>
-              </div>
-              <div>
-                <label style={styles.label}>Posisi X (horizontal)</label>
-                <input
-                  type="number"
-                  value={phoneCoordinates.x}
-                  onChange={(e) => setPhoneCoordinates(prev => ({ ...prev, x: parseInt(e.target.value) || 0 }))}
-                  style={styles.numberInput}
-                />
-              </div>
-              <div>
-                <label style={styles.label}>Posisi Y (vertical)</label>
-                <input
-                  type="number"
-                  value={phoneCoordinates.y}
-                  onChange={(e) => setPhoneCoordinates(prev => ({ ...prev, y: parseInt(e.target.value) || 0 }))}
-                  style={styles.numberInput}
-                />
-              </div>
-            </div>
+            <CoordinateControl field="nama" label="Nama" emoji="📝" />
+            <CoordinateControl field="instansiUnit" label="Instansi Unit" emoji="🏢" />
+            <CoordinateControl field="contact" label="Contact" emoji="📞" />
           </div>
 
           {/* Action Buttons */}
           <div style={styles.buttonGroup}>
             <button
               onClick={handleGeneratePDF}
-              disabled={!pdfFile || !nama.trim() || !nomorTelepon.trim() || isProcessing}
+              disabled={!pdfFile || Object.values(formData).some(val => !val.trim()) || isProcessing}
               style={{
                 ...styles.primaryButton,
-                ...((!pdfFile || !nama.trim() || !nomorTelepon.trim() || isProcessing) ? styles.disabledButton : {})
+                ...((!pdfFile || Object.values(formData).some(val => !val.trim()) || isProcessing) ? styles.disabledButton : {})
               }}
             >
               <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -575,27 +734,14 @@ const PDFFormFiller = () => {
         <div style={styles.infoCard}>
           <h3 style={styles.infoTitle}>Catatan Penting:</h3>
           <ul style={styles.infoList}>
-            <li>Upload PDF template yang sudah ada - aplikasi akan mendeteksi jumlah halaman</li>
-            <li>Pilih halaman yang tepat untuk setiap field (nama dan nomor telepon bisa di halaman berbeda)</li>
-            <li>Koordinat Y dimulai dari bawah halaman (semakin tinggi nilai Y, semakin ke atas)</li>
-            <li>Koordinat X dimulai dari kiri halaman (semakin tinggi nilai X, semakin ke kanan)</li>
-            <li>Gunakan preset posisi sebagai starting point, lalu fine-tune sesuai kebutuhan</li>
-            <li>Aplikasi akan membuat file PDF baru tanpa mengubah PDF asli</li>
-            <li>Validasi halaman otomatis - akan muncul error jika halaman tidak tersedia</li>
+            <li><strong>Upload PDF template</strong> - aplikasi akan mendeteksi jumlah halaman</li>
+            <li><strong>Isi semua field</strong> - nama nasabah, alamat, nama implementor, tanggal (3 box), nama, instansi unit, contact</li>
+            <li><strong>Tanggal terpisah</strong> - ada 3 box koordinat untuk hari, bulan, tahun (bisa diposisikan terpisah)</li>
+            <li><strong>Koordinat Y</strong> - dimulai dari bawah halaman (semakin tinggi nilai Y, semakin ke atas)</li>
+            <li><strong>Koordinat X</strong> - dimulai dari kiri halaman (semakin tinggi nilai X, semakin ke kanan)</li>
+            <li><strong>Setiap field punya koordinat sendiri</strong> - bisa di halaman berbeda</li>
+            <li><strong>Preview koordinat</strong> - ditampilkan di sebelah kanan setiap field</li>
           </ul>
-        </div>
-
-        {/* Tips untuk koordinat */}
-        <div style={styles.altCard}>
-          <h3 style={{ fontWeight: '500', color: '#1e40af', marginBottom: '8px' }}>
-            Tips Koordinat PDF:
-          </h3>
-          <div style={{ fontSize: '14px', color: '#1e40af' }}>
-            <p><strong>Sistem Koordinat:</strong> (0,0) berada di pojok kiri bawah setiap halaman</p>
-            <p><strong>Halaman A4:</strong> Sekitar 595 x 842 points (lebar x tinggi)</p>
-            <p><strong>Posisi Umum:</strong> Header (~750-800), Middle (~400-500), Footer (~50-100)</p>
-            <p><strong>Testing:</strong> Mulai dengan nilai kecil, lalu adjust sampai posisi tepat</p>
-          </div>
         </div>
       </div>
     </div>
