@@ -6,8 +6,9 @@ const PDFFormFiller = () => {
   const [nomorTelepon, setNomorTelepon] = useState('');
   const [pdfUrl, setPdfUrl] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [coordinates, setCoordinates] = useState({ x: 200, y: 650 });
-  const [phoneCoordinates, setPhoneCoordinates] = useState({ x: 268, y: 650 });
+  const [coordinates, setCoordinates] = useState({ x: 268, y: 678, page: 1 });
+  const [phoneCoordinates, setPhoneCoordinates] = useState({ x: 268, y: 650, page: 1 });
+  const [totalPages, setTotalPages] = useState(0);
   const fileInputRef = useRef(null);
 
   const styles = {
@@ -96,6 +97,11 @@ const PDFFormFiller = () => {
     },
     grid: {
       display: 'grid',
+      gridTemplateColumns: '1fr 1fr 1fr',
+      gap: '16px'
+    },
+    gridTwo: {
+      display: 'grid',
       gridTemplateColumns: '1fr 1fr',
       gap: '16px'
     },
@@ -105,6 +111,14 @@ const PDFFormFiller = () => {
       border: '1px solid #d1d5db',
       borderRadius: '6px',
       fontSize: '14px'
+    },
+    selectInput: {
+      width: '100%',
+      padding: '8px 12px',
+      border: '1px solid #d1d5db',
+      borderRadius: '6px',
+      fontSize: '14px',
+      backgroundColor: 'white'
     },
     buttonGroup: {
       display: 'flex',
@@ -184,15 +198,51 @@ const PDFFormFiller = () => {
       fontSize: '12px',
       cursor: 'pointer',
       transition: 'background-color 0.2s'
+    },
+    pageInfo: {
+      backgroundColor: '#f3f4f6',
+      padding: '8px 12px',
+      borderRadius: '6px',
+      fontSize: '14px',
+      color: '#6b7280',
+      marginTop: '8px'
+    },
+    coordinateGroup: {
+      backgroundColor: '#f9fafb',
+      border: '1px solid #e5e7eb',
+      borderRadius: '8px',
+      padding: '16px',
+      marginBottom: '16px'
+    },
+    coordinateTitle: {
+      fontSize: '16px',
+      fontWeight: '500',
+      color: '#1f2937',
+      marginBottom: '12px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px'
     }
   };
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (file && file.type === 'application/pdf') {
       setPdfFile(file);
       const url = URL.createObjectURL(file);
       setPdfUrl(url);
+      
+      // Count total pages
+      try {
+        const { PDFDocument } = await import('https://cdn.skypack.dev/pdf-lib@^1.17.1');
+        const arrayBuffer = await file.arrayBuffer();
+        const pdfDoc = await PDFDocument.load(arrayBuffer);
+        const pages = pdfDoc.getPages();
+        setTotalPages(pages.length);
+      } catch (error) {
+        console.error('Error counting pages:', error);
+        setTotalPages(0);
+      }
     } else {
       alert('Please select a PDF file');
     }
@@ -214,20 +264,39 @@ const PDFFormFiller = () => {
       const arrayBuffer = await pdfFile.arrayBuffer();
       const pdfDoc = await PDFDocument.load(arrayBuffer);
       
-      // Get the first page
+      // Get all pages
       const pages = pdfDoc.getPages();
-      const firstPage = pages[0];
       
-      // Add nama lengkap to the PDF at (268, 678)
-      firstPage.drawText(nama, {
-        x: 268,
-        y: 678,
+      // Validate page numbers
+      const namaPageIndex = coordinates.page - 1;
+      const phonePageIndex = phoneCoordinates.page - 1;
+      
+      if (namaPageIndex >= pages.length || namaPageIndex < 0) {
+        alert(`Halaman ${coordinates.page} untuk nama tidak tersedia! PDF ini hanya memiliki ${pages.length} halaman.`);
+        setIsProcessing(false);
+        return;
+      }
+      
+      if (phonePageIndex >= pages.length || phonePageIndex < 0) {
+        alert(`Halaman ${phoneCoordinates.page} untuk nomor telepon tidak tersedia! PDF ini hanya memiliki ${pages.length} halaman.`);
+        setIsProcessing(false);
+        return;
+      }
+      
+      // Get the specific pages
+      const namaPage = pages[namaPageIndex];
+      const phonePage = pages[phonePageIndex];
+      
+      // Add nama lengkap to the specified page and coordinates
+      namaPage.drawText(nama, {
+        x: coordinates.x,
+        y: coordinates.y,
         size: 10,
         color: rgb(0, 0, 0),
       });
       
-      // Add nomor telepon to the PDF at phoneCoordinates
-      firstPage.drawText(nomorTelepon, {
+      // Add nomor telepon to the specified page and coordinates
+      phonePage.drawText(nomorTelepon, {
         x: phoneCoordinates.x,
         y: phoneCoordinates.y,
         size: 10,
@@ -261,9 +330,24 @@ const PDFFormFiller = () => {
     setPdfUrl(null);
     setNama('');
     setNomorTelepon('');
+    setTotalPages(0);
+    setCoordinates({ x: 268, y: 678, page: 1 });
+    setPhoneCoordinates({ x: 268, y: 650, page: 1 });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const generatePageOptions = () => {
+    const options = [];
+    for (let i = 1; i <= totalPages; i++) {
+      options.push(
+        <option key={i} value={i}>
+          Halaman {i}
+        </option>
+      );
+    }
+    return options;
   };
 
   return (
@@ -274,7 +358,7 @@ const PDFFormFiller = () => {
             <svg style={styles.icon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <h1 style={styles.title}>PDF Form Filler</h1>
+            <h1 style={styles.title}>PDF Form Filler Multi-Page</h1>
           </div>
           
           {/* Upload Section */}
@@ -293,34 +377,42 @@ const PDFFormFiller = () => {
               />
               <button style={styles.uploadButton}>Choose PDF File</button>
               {pdfFile && (
-                <p style={{ marginTop: '8px', fontSize: '14px', color: '#6b7280' }}>
-                  Selected: {pdfFile.name}
-                </p>
+                <div>
+                  <p style={{ marginTop: '8px', fontSize: '14px', color: '#6b7280' }}>
+                    Selected: {pdfFile.name}
+                  </p>
+                  {totalPages > 0 && (
+                    <div style={styles.pageInfo}>
+                      📄 Total halaman: {totalPages}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
 
           {/* Form Section */}
-          <div style={styles.section}>
-            <label style={styles.label}>Nama yang akan diisi</label>
-            <input
-              type="text"
-              value={nama}
-              onChange={(e) => setNama(e.target.value)}
-              placeholder="Masukkan nama..."
-              style={styles.input}
-            />
-          </div>
-
-          <div style={styles.section}>
-            <label style={styles.label}>Nomor Telepon yang akan diisi</label>
-            <input
-              type="text"
-              value={nomorTelepon}
-              onChange={(e) => setNomorTelepon(e.target.value)}
-              placeholder="Masukkan nomor telepon..."
-              style={styles.input}
-            />
+          <div style={styles.gridTwo}>
+            <div>
+              <label style={styles.label}>Nama yang akan diisi</label>
+              <input
+                type="text"
+                value={nama}
+                onChange={(e) => setNama(e.target.value)}
+                placeholder="Masukkan nama..."
+                style={styles.input}
+              />
+            </div>
+            <div>
+              <label style={styles.label}>Nomor Telepon yang akan diisi</label>
+              <input
+                type="text"
+                value={nomorTelepon}
+                onChange={(e) => setNomorTelepon(e.target.value)}
+                placeholder="Masukkan nomor telepon..."
+                style={styles.input}
+              />
+            </div>
           </div>
 
           {/* Preset Positions */}
@@ -328,34 +420,66 @@ const PDFFormFiller = () => {
             <label style={styles.label}>Preset Posisi</label>
             <div style={styles.presetButtons}>
               <button
-                onClick={() => setCoordinates({ x: 268, y: 678 })}
+                onClick={() => setCoordinates({ x: 268, y: 678, page: 1 })}
                 style={{
                   ...styles.presetButton,
                   backgroundColor: '#dbeafe',
                   color: '#1e40af'
                 }}
               >
-                Nama Lengkap (268, 678)
+                Nama Hal.1 (268, 678)
               </button>
               <button
-                onClick={() => setPhoneCoordinates({ x: 268, y: 650 })}
+                onClick={() => setPhoneCoordinates({ x: 268, y: 650, page: 1 })}
                 style={{
                   ...styles.presetButton,
                   backgroundColor: '#dcfce7',
                   color: '#166534'
                 }}
               >
-                Nomor Telepon (268, 650)
+                Telepon Hal.1 (268, 650)
+              </button>
+              <button
+                onClick={() => setCoordinates({ x: 100, y: 750, page: 2 })}
+                style={{
+                  ...styles.presetButton,
+                  backgroundColor: '#fef3c7',
+                  color: '#92400e'
+                }}
+              >
+                Nama Hal.2 (100, 750)
+              </button>
+              <button
+                onClick={() => setPhoneCoordinates({ x: 100, y: 720, page: 2 })}
+                style={{
+                  ...styles.presetButton,
+                  backgroundColor: '#fce7f3',
+                  color: '#be185d'
+                }}
+              >
+                Telepon Hal.2 (100, 720)
               </button>
             </div>
           </div>
 
           {/* Position Controls */}
-          <div style={styles.section}>
-            <h4 style={{ fontSize: '16px', fontWeight: '500', color: '#1f2937', marginBottom: '12px' }}>
+          <div style={styles.coordinateGroup}>
+            <div style={styles.coordinateTitle}>
+              <span>📝</span>
               Posisi Nama Lengkap
-            </h4>
+            </div>
             <div style={styles.grid}>
+              <div>
+                <label style={styles.label}>Halaman</label>
+                <select
+                  value={coordinates.page}
+                  onChange={(e) => setCoordinates(prev => ({ ...prev, page: parseInt(e.target.value) }))}
+                  style={styles.selectInput}
+                  disabled={totalPages === 0}
+                >
+                  {totalPages > 0 ? generatePageOptions() : <option>Upload PDF dulu</option>}
+                </select>
+              </div>
               <div>
                 <label style={styles.label}>Posisi X (horizontal)</label>
                 <input
@@ -377,11 +501,23 @@ const PDFFormFiller = () => {
             </div>
           </div>
 
-          <div style={styles.section}>
-            <h4 style={{ fontSize: '16px', fontWeight: '500', color: '#1f2937', marginBottom: '12px' }}>
+          <div style={styles.coordinateGroup}>
+            <div style={styles.coordinateTitle}>
+              <span>📞</span>
               Posisi Nomor Telepon
-            </h4>
+            </div>
             <div style={styles.grid}>
+              <div>
+                <label style={styles.label}>Halaman</label>
+                <select
+                  value={phoneCoordinates.page}
+                  onChange={(e) => setPhoneCoordinates(prev => ({ ...prev, page: parseInt(e.target.value) }))}
+                  style={styles.selectInput}
+                  disabled={totalPages === 0}
+                >
+                  {totalPages > 0 ? generatePageOptions() : <option>Upload PDF dulu</option>}
+                </select>
+              </div>
               <div>
                 <label style={styles.label}>Posisi X (horizontal)</label>
                 <input
@@ -439,25 +575,26 @@ const PDFFormFiller = () => {
         <div style={styles.infoCard}>
           <h3 style={styles.infoTitle}>Catatan Penting:</h3>
           <ul style={styles.infoList}>
-            <li>Upload PDF template yang sudah ada</li>
-            <li>Masukkan nama dan nomor telepon yang ingin diisi</li>
-            <li>Nama akan diisi di koordinat yang bisa diatur (default: 268, 678)</li>
-            <li>Nomor telepon akan diisi di koordinat yang bisa diatur (default: 268, 650)</li>
-            <li>Aplikasi akan menambahkan kedua data ke PDF dan download otomatis</li>
-            <li>PDF asli tidak akan berubah, akan membuat file baru</li>
+            <li>Upload PDF template yang sudah ada - aplikasi akan mendeteksi jumlah halaman</li>
+            <li>Pilih halaman yang tepat untuk setiap field (nama dan nomor telepon bisa di halaman berbeda)</li>
+            <li>Koordinat Y dimulai dari bawah halaman (semakin tinggi nilai Y, semakin ke atas)</li>
+            <li>Koordinat X dimulai dari kiri halaman (semakin tinggi nilai X, semakin ke kanan)</li>
+            <li>Gunakan preset posisi sebagai starting point, lalu fine-tune sesuai kebutuhan</li>
+            <li>Aplikasi akan membuat file PDF baru tanpa mengubah PDF asli</li>
+            <li>Validasi halaman otomatis - akan muncul error jika halaman tidak tersedia</li>
           </ul>
         </div>
 
-        {/* Alternative Solutions */}
+        {/* Tips untuk koordinat */}
         <div style={styles.altCard}>
           <h3 style={{ fontWeight: '500', color: '#1e40af', marginBottom: '8px' }}>
-            Solusi Alternatif:
+            Tips Koordinat PDF:
           </h3>
           <div style={{ fontSize: '14px', color: '#1e40af' }}>
-            <p><strong>1. Adobe Acrobat Pro:</strong> Bisa membuat form fields yang bisa diisi otomatis</p>
-            <p><strong>2. Google Apps Script:</strong> Otomasi dengan Google Drive untuk PDF fillable</p>
-            <p><strong>3. Python + PyPDF2/pdftk:</strong> Script desktop untuk batch processing</p>
-            <p><strong>4. Online Tools:</strong> PDFtk Server, FormSwift, atau JotForm untuk PDF forms</p>
+            <p><strong>Sistem Koordinat:</strong> (0,0) berada di pojok kiri bawah setiap halaman</p>
+            <p><strong>Halaman A4:</strong> Sekitar 595 x 842 points (lebar x tinggi)</p>
+            <p><strong>Posisi Umum:</strong> Header (~750-800), Middle (~400-500), Footer (~50-100)</p>
+            <p><strong>Testing:</strong> Mulai dengan nilai kecil, lalu adjust sampai posisi tepat</p>
           </div>
         </div>
       </div>
