@@ -8,28 +8,39 @@ const PDFFormFiller = () => {
     namaImplementor: '',
     tanggalHari: '',
     tanggalBulan: '',
-    tanggalTahun: '',
-    nama: '',
-    instansiUnit: '',
-    contact: ''
+    tanggalTahun: ''
   });
+  
+  const [attendees, setAttendees] = useState([
+    { nama: '', instansiUnit: '', contact: '' }
+  ]);
+  
   const [pdfUrl, setPdfUrl] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
   const fileInputRef = useRef(null);
 
-  // Koordinat untuk setiap field
-  const [coordinates, setCoordinates] = useState({
-    namaNasabah: { x: 150, y: 700, page: 1 },
-    alamat: { x: 150, y: 670, page: 1 },
-    namaImplementor: { x: 150, y: 640, page: 1 },
-    tanggalHari: { x: 150, y: 610, page: 1 },
-    tanggalBulan: { x: 200, y: 610, page: 1 },
-    tanggalTahun: { x: 280, y: 610, page: 1 },
-    nama: { x: 150, y: 580, page: 1 },
-    instansiUnit: { x: 150, y: 550, page: 1 },
-    contact: { x: 150, y: 520, page: 1 }
+  const [basicCoordinates, setBasicCoordinates] = useState({
+    namaNasabah: { x: 210, y: 700, page: 1 },
+    alamat: { x: 210, y: 677, page: 1 },
+    namaImplementor: { x: 210, y: 627, page: 1 },
+    tanggalHari: { x: 210, y: 613, page: 1 },
+    tanggalBulan: { x: 355, y: 613, page: 1 },
+    tanggalTahun: { x: 470, y: 613, page: 1 }
   });
+
+  const [attendeeCoordinates, setAttendeeCoordinates] = useState([
+    { nama: { x: 100, y: 200, page: 3 }, instansiUnit: { x: 200, y: 200, page: 3 }, contact: { x: 300, y: 200, page: 3 } },
+    { nama: { x: 120, y: 220, page: 3 }, instansiUnit: { x: 300, y: 220, page: 3 }, contact: { x: 300, y: 220, page: 3 } },
+    { nama: { x: 150, y: 540, page: 3 }, instansiUnit: { x: 250, y: 540, page: 3 }, contact: { x: 400, y: 540, page: 3 } },
+    { nama: { x: 150, y: 520, page: 3 }, instansiUnit: { x: 250, y: 520, page: 3 }, contact: { x: 400, y: 520, page: 3 } },
+    { nama: { x: 150, y: 500, page: 3 }, instansiUnit: { x: 250, y: 500, page: 3 }, contact: { x: 400, y: 500, page: 3 } },
+    { nama: { x: 150, y: 480, page: 3 }, instansiUnit: { x: 250, y: 480, page: 3 }, contact: { x: 400, y: 480, page: 3 } },
+    { nama: { x: 150, y: 460, page: 3 }, instansiUnit: { x: 250, y: 460, page: 3 }, contact: { x: 400, y: 460, page: 3 } },
+    { nama: { x: 150, y: 440, page: 3 }, instansiUnit: { x: 250, y: 440, page: 3 }, contact: { x: 400, y: 440, page: 3 } },
+    { nama: { x: 150, y: 420, page: 3 }, instansiUnit: { x: 250, y: 420, page: 3 }, contact: { x: 400, y: 420, page: 3 } },
+    { nama: { x: 150, y: 400, page: 3 }, instansiUnit: { x: 250, y: 400, page: 3 }, contact: { x: 400, y: 400, page: 3 } }
+  ]);
 
   const styles = {
     container: {
@@ -242,6 +253,69 @@ const PDFFormFiller = () => {
       fontSize: '12px',
       color: '#6b7280',
       textAlign: 'center'
+    },
+    attendeeSection: {
+      border: '1px solid #e5e7eb',
+      borderRadius: '8px',
+      padding: '16px',
+      marginBottom: '16px',
+      backgroundColor: '#fff'
+    },
+    attendeeHeader: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '16px'
+    },
+    attendeeTitle: {
+      fontSize: '16px',
+      fontWeight: '500',
+      color: '#1f2937',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px'
+    },
+    attendeeControls: {
+      display: 'flex',
+      gap: '8px'
+    },
+    iconButton: {
+      width: '32px',
+      height: '32px',
+      borderRadius: '6px',
+      border: 'none',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '18px',
+      fontWeight: 'bold'
+    },
+    addButton: {
+      backgroundColor: '#10b981',
+      color: 'white'
+    },
+    removeButton: {
+      backgroundColor: '#ef4444',
+      color: 'white'
+    },
+    attendeeGrid: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr 1fr',
+      gap: '12px',
+      marginBottom: '16px'
+    },
+    attendeeCoordinateSection: {
+      backgroundColor: '#f8fafc',
+      padding: '12px',
+      borderRadius: '6px',
+      marginTop: '12px'
+    },
+    coordSubtitle: {
+      fontSize: '12px',
+      fontWeight: '500',
+      color: '#64748b',
+      marginBottom: '8px'
     }
   };
 
@@ -274,8 +348,26 @@ const PDFFormFiller = () => {
     }));
   };
 
-  const updateCoordinates = (field, axis, value) => {
-    setCoordinates(prev => ({
+  const updateAttendee = (index, field, value) => {
+    setAttendees(prev => prev.map((attendee, i) => 
+      i === index ? { ...attendee, [field]: value } : attendee
+    ));
+  };
+
+  const addAttendee = () => {
+    if (attendees.length < 10) {
+      setAttendees(prev => [...prev, { nama: '', instansiUnit: '', contact: '' }]);
+    }
+  };
+
+  const removeAttendee = (index) => {
+    if (attendees.length > 1) {
+      setAttendees(prev => prev.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateBasicCoordinates = (field, axis, value) => {
+    setBasicCoordinates(prev => ({
       ...prev,
       [field]: {
         ...prev[field],
@@ -284,12 +376,28 @@ const PDFFormFiller = () => {
     }));
   };
 
+  const updateAttendeeCoordinates = (attendeeIndex, field, axis, value) => {
+    setAttendeeCoordinates(prev => prev.map((coord, i) => 
+      i === attendeeIndex ? {
+        ...coord,
+        [field]: {
+          ...coord[field],
+          [axis]: axis === 'page' ? parseInt(value) : parseInt(value) || 0
+        }
+      } : coord
+    ));
+  };
+
   const handleGeneratePDF = async () => {
-    const requiredFields = ['namaNasabah', 'alamat', 'namaImplementor', 'tanggalHari', 'tanggalBulan', 'tanggalTahun', 'nama', 'instansiUnit', 'contact'];
-    const missingFields = requiredFields.filter(field => !formData[field].trim());
+    const basicRequiredFields = ['namaNasabah', 'alamat', 'namaImplementor', 'tanggalHari', 'tanggalBulan', 'tanggalTahun'];
+    const missingBasicFields = basicRequiredFields.filter(field => !formData[field].trim());
     
-    if (!pdfFile || missingFields.length > 0) {
-      alert('Please upload PDF and fill all required fields');
+    const emptyAttendees = attendees.some(attendee => 
+      !attendee.nama.trim() || !attendee.instansiUnit.trim() || !attendee.contact.trim()
+    );
+    
+    if (!pdfFile || missingBasicFields.length > 0 || emptyAttendees) {
+      alert('Please upload PDF and fill all required fields including all attendee information');
       return;
     }
 
@@ -302,8 +410,8 @@ const PDFFormFiller = () => {
       const pdfDoc = await PDFDocument.load(arrayBuffer);
       const pages = pdfDoc.getPages();
       
-      // Validate all pages
-      for (const [field, coord] of Object.entries(coordinates)) {
+      // Validate basic coordinates
+      for (const [field, coord] of Object.entries(basicCoordinates)) {
         const pageIndex = coord.page - 1;
         if (pageIndex >= pages.length || pageIndex < 0) {
           alert(`Halaman ${coord.page} untuk ${field} tidak tersedia! PDF ini hanya memiliki ${pages.length} halaman.`);
@@ -312,10 +420,10 @@ const PDFFormFiller = () => {
         }
       }
       
-      // Add text to PDF
+      // Add basic form data to PDF
       Object.entries(formData).forEach(([field, value]) => {
         if (value.trim()) {
-          const coord = coordinates[field];
+          const coord = basicCoordinates[field];
           const page = pages[coord.page - 1];
           
           page.drawText(value, {
@@ -324,6 +432,46 @@ const PDFFormFiller = () => {
             size: 10,
             color: rgb(0, 0, 0),
           });
+        }
+      });
+      
+      // Add attendee data to PDF
+      attendees.forEach((attendee, index) => {
+        if (index < attendeeCoordinates.length) {
+          const coords = attendeeCoordinates[index];
+          
+          // Add nama
+          if (attendee.nama.trim()) {
+            const page = pages[coords.nama.page - 1];
+            page.drawText(attendee.nama, {
+              x: coords.nama.x,
+              y: coords.nama.y,
+              size: 10,
+              color: rgb(0, 0, 0),
+            });
+          }
+          
+          // Add instansi unit
+          if (attendee.instansiUnit.trim()) {
+            const page = pages[coords.instansiUnit.page - 1];
+            page.drawText(attendee.instansiUnit, {
+              x: coords.instansiUnit.x,
+              y: coords.instansiUnit.y,
+              size: 10,
+              color: rgb(0, 0, 0),
+            });
+          }
+          
+          // Add contact
+          if (attendee.contact.trim()) {
+            const page = pages[coords.contact.page - 1];
+            page.drawText(attendee.contact, {
+              x: coords.contact.x,
+              y: coords.contact.y,
+              size: 10,
+              color: rgb(0, 0, 0),
+            });
+          }
         }
       });
       
@@ -354,22 +502,17 @@ const PDFFormFiller = () => {
       namaImplementor: '',
       tanggalHari: '',
       tanggalBulan: '',
-      tanggalTahun: '',
-      nama: '',
-      instansiUnit: '',
-      contact: ''
+      tanggalTahun: ''
     });
+    setAttendees([{ nama: '', instansiUnit: '', contact: '' }]);
     setTotalPages(0);
-    setCoordinates({
+    setBasicCoordinates({
       namaNasabah: { x: 150, y: 700, page: 1 },
       alamat: { x: 150, y: 670, page: 1 },
       namaImplementor: { x: 150, y: 640, page: 1 },
       tanggalHari: { x: 150, y: 610, page: 1 },
       tanggalBulan: { x: 200, y: 610, page: 1 },
-      tanggalTahun: { x: 280, y: 610, page: 1 },
-      nama: { x: 150, y: 580, page: 1 },
-      instansiUnit: { x: 150, y: 550, page: 1 },
-      contact: { x: 150, y: 520, page: 1 }
+      tanggalTahun: { x: 280, y: 610, page: 1 }
     });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -388,7 +531,7 @@ const PDFFormFiller = () => {
     return options;
   };
 
-  const CoordinateControl = ({ field, label, emoji }) => (
+  const BasicCoordinateControl = ({ field, label, emoji }) => (
     <div style={styles.coordinateGroup}>
       <div style={styles.coordinateTitle}>
         <span>{emoji}</span>
@@ -398,8 +541,8 @@ const PDFFormFiller = () => {
         <div>
           <label style={styles.label}>Halaman</label>
           <select
-            value={coordinates[field].page}
-            onChange={(e) => updateCoordinates(field, 'page', e.target.value)}
+            value={basicCoordinates[field].page}
+            onChange={(e) => updateBasicCoordinates(field, 'page', e.target.value)}
             style={styles.selectInput}
             disabled={totalPages === 0}
           >
@@ -410,8 +553,8 @@ const PDFFormFiller = () => {
           <label style={styles.label}>X</label>
           <input
             type="number"
-            value={coordinates[field].x}
-            onChange={(e) => updateCoordinates(field, 'x', e.target.value)}
+            value={basicCoordinates[field].x}
+            onChange={(e) => updateBasicCoordinates(field, 'x', e.target.value)}
             style={styles.numberInput}
           />
         </div>
@@ -419,20 +562,28 @@ const PDFFormFiller = () => {
           <label style={styles.label}>Y</label>
           <input
             type="number"
-            value={coordinates[field].y}
-            onChange={(e) => updateCoordinates(field, 'y', e.target.value)}
+            value={basicCoordinates[field].y}
+            onChange={(e) => updateBasicCoordinates(field, 'y', e.target.value)}
             style={styles.numberInput}
           />
         </div>
         <div>
           <label style={styles.label}>Preview</label>
           <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
-            ({coordinates[field].x}, {coordinates[field].y})
+            ({basicCoordinates[field].x}, {basicCoordinates[field].y})
           </div>
         </div>
       </div>
     </div>
   );
+
+  const isFormComplete = () => {
+    const basicComplete = Object.values(formData).every(val => val.trim());
+    const attendeesComplete = attendees.every(attendee => 
+      attendee.nama.trim() && attendee.instansiUnit.trim() && attendee.contact.trim()
+    );
+    return pdfFile && basicComplete && attendeesComplete;
+  };
 
   return (
     <div style={styles.container}>
@@ -442,7 +593,7 @@ const PDFFormFiller = () => {
             <svg style={styles.icon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <h1 style={styles.title}>PDF Form Filler - Extended</h1>
+            <h1 style={styles.title}>PDF Form Filler - Multiple Attendees</h1>
           </div>
           
           {/* Upload Section */}
@@ -475,124 +626,262 @@ const PDFFormFiller = () => {
             </div>
           </div>
 
-          {/* Form Section */}
+          {/* Basic Form Section */}
           <div style={styles.section}>
-            <h3 style={{fontSize: '18px', fontWeight: '500', marginBottom: '16px', color: '#1f2937'}}>Data yang akan diisi</h3>
+            <h3 style={{fontSize: '18px', fontWeight: '500', marginBottom: '16px', color: '#1f2937'}}>Profil Nasabah</h3>
             
-            <div style={styles.grid}>
-              <div>
-                <label style={styles.label}>Nama Nasabah</label>
-                <input
-                  type="text"
-                  value={formData.namaNasabah}
-                  onChange={(e) => updateFormData('namaNasabah', e.target.value)}
-                  placeholder="Masukkan nama nasabah..."
-                  style={styles.input}
-                />
-              </div>
-              <div>
-                <label style={styles.label}>Alamat</label>
-                <input
-                  type="text"
-                  value={formData.alamat}
-                  onChange={(e) => updateFormData('alamat', e.target.value)}
-                  placeholder="Masukkan alamat..."
-                  style={styles.input}
-                />
-              </div>
+            <div style={{marginBottom: '16px'}}>
+              <label style={styles.label}>Nama Nasabah Company ID</label>
+              <input
+                type="text"
+                value={formData.namaNasabah}
+                onChange={(e) => updateFormData('namaNasabah', e.target.value)}
+                style={styles.input}
+              />
             </div>
 
-            <div style={styles.grid}>
-              <div>
-                <label style={styles.label}>Nama Implementor</label>
-                <input
-                  type="text"
-                  value={formData.namaImplementor}
-                  onChange={(e) => updateFormData('namaImplementor', e.target.value)}
-                  placeholder="Masukkan nama implementor..."
-                  style={styles.input}
-                />
-              </div>
-              <div>
-                <label style={styles.label}>Tanggal Implementasi</label>
-                <div style={styles.dateContainer}>
-                  <div style={{flex: 1}}>
-                    <input
-                      type="text"
-                      value={formData.tanggalHari}
-                      onChange={(e) => updateFormData('tanggalHari', e.target.value)}
-                      placeholder="08"
-                      maxLength="2"
-                      style={styles.smallInput}
-                    />
-                    <div style={styles.dateLabel}>Hari</div>
-                  </div>
-                  <div style={{flex: 1}}>
-                    <input
-                      type="text"
-                      value={formData.tanggalBulan}
-                      onChange={(e) => updateFormData('tanggalBulan', e.target.value)}
-                      placeholder="Juli"
-                      style={styles.smallInput}
-                    />
-                    <div style={styles.dateLabel}>Bulan</div>
-                  </div>
-                  <div style={{flex: 1}}>
-                    <input
-                      type="text"
-                      value={formData.tanggalTahun}
-                      onChange={(e) => updateFormData('tanggalTahun', e.target.value)}
-                      placeholder="2025"
-                      maxLength="4"
-                      style={styles.smallInput}
-                    />
-                    <div style={styles.dateLabel}>Tahun</div>
-                  </div>
+            <div style={{marginBottom: '16px'}}>
+              <label style={styles.label}>Alamat</label>
+              <input
+                type="text"
+                value={formData.alamat}
+                onChange={(e) => updateFormData('alamat', e.target.value)}
+                style={styles.input}
+              />
+            </div>
+            
+            <h3 style={{fontSize: '18px', fontWeight: '500', marginBottom: '16px', color: '#1f2937'}}>Profil Implementasi</h3>
+
+            <div style={{marginBottom: '16px'}}>
+              <label style={styles.label}>Nama Implementor</label>
+              <input
+                type="text"
+                value={formData.namaImplementor}
+                onChange={(e) => updateFormData('namaImplementor', e.target.value)}
+                style={styles.input}
+              />
+            </div>
+
+            <div style={{marginBottom: '16px'}}>
+              <label style={styles.label}>Tanggal Implementasi</label>
+              <div style={styles.dateContainer}>
+                <div style={{flex: 1}}>
+                  <input
+                    type="text"
+                    value={formData.tanggalHari}
+                    onChange={(e) => updateFormData('tanggalHari', e.target.value)}
+                    maxLength="2"
+                    style={styles.smallInput}
+                  />
+                  <div style={styles.dateLabel}>Hari</div>
+                </div>
+                <div style={{flex: 1}}>
+                  <input
+                    type="text"
+                    value={formData.tanggalBulan}
+                    onChange={(e) => updateFormData('tanggalBulan', e.target.value)}
+                    style={styles.smallInput}
+                  />
+                  <div style={styles.dateLabel}>Bulan</div>
+                </div>
+                <div style={{flex: 1}}>
+                  <input
+                    type="text"
+                    value={formData.tanggalTahun}
+                    onChange={(e) => updateFormData('tanggalTahun', e.target.value)}
+                    maxLength="4"
+                    style={styles.smallInput}
+                  />
+                  <div style={styles.dateLabel}>Tahun</div>
                 </div>
               </div>
             </div>
-
-            <div style={styles.gridThree}>
-              <div>
-                <label style={styles.label}>Nama</label>
-                <input
-                  type="text"
-                  value={formData.nama}
-                  onChange={(e) => updateFormData('nama', e.target.value)}
-                  placeholder="Masukkan nama..."
-                  style={styles.input}
-                />
-              </div>
-              <div>
-                <label style={styles.label}>Instansi Unit</label>
-                <input
-                  type="text"
-                  value={formData.instansiUnit}
-                  onChange={(e) => updateFormData('instansiUnit', e.target.value)}
-                  placeholder="Masukkan instansi unit..."
-                  style={styles.input}
-                />
-              </div>
-              <div>
-                <label style={styles.label}>Contact</label>
-                <input
-                  type="text"
-                  value={formData.contact}
-                  onChange={(e) => updateFormData('contact', e.target.value)}
-                  placeholder="Masukkan contact..."
-                  style={styles.input}
-                />
-              </div>
+          </div>
+            
+          {/* Attendees Section */}
+          <div style={styles.section}>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+              <h3 style={{fontSize: '18px', fontWeight: '500', color: '#1f2937', margin: 0}}>
+                Informasi Kehadiran ({attendees.length}/10)
+              </h3>
+              <button
+                onClick={addAttendee}
+                disabled={attendees.length >= 10}
+                style={{
+                  ...styles.iconButton,
+                  ...styles.addButton,
+                  ...(attendees.length >= 10 ? styles.disabledButton : {})
+                }}
+                title="Tambah Peserta"
+              >
+                +
+              </button>
             </div>
+
+            {attendees.map((attendee, index) => (
+              <div key={index} style={styles.attendeeSection}>
+                <div style={styles.attendeeHeader}>
+                  <div style={styles.attendeeTitle}>
+                    Peserta {index + 1}
+                  </div>
+                  <div style={styles.attendeeControls}>
+                    {attendees.length > 1 && (
+                      <button
+                        onClick={() => removeAttendee(index)}
+                        style={{...styles.iconButton, ...styles.removeButton}}
+                        title="Hapus Peserta"
+                      >
+                        -
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Fixed: 3 input fields for each attendee */}
+                <div style={styles.attendeeGrid}>
+                  <div>
+                    <label style={styles.label}>Nama</label>
+                    <input
+                      type="text"
+                      value={attendee.nama}
+                      onChange={(e) => updateAttendee(index, 'nama', e.target.value)}
+                      style={styles.input}
+                    />
+                  </div>
+                  <div>
+                    <label style={styles.label}>Instansi/Unit</label>
+                    <input
+                      type="text"
+                      value={attendee.instansiUnit}
+                      onChange={(e) => updateAttendee(index, 'instansiUnit', e.target.value)}
+                      style={styles.input}
+                    />
+                  </div>
+                  <div>
+                    <label style={styles.label}>Contact</label>
+                    <input
+                      type="text"
+                      value={attendee.contact}
+                      onChange={(e) => updateAttendee(index, 'contact', e.target.value)}
+                      style={styles.input}
+                    />
+                  </div>
+                </div>
+
+                {/* Coordinate controls for this attendee */}
+                <div style={styles.attendeeCoordinateSection}>
+                  <div style={styles.coordSubtitle}>
+                    Koordinat Baris {index + 1} (Nama - Instansi - Contact)
+                  </div>
+                  <div style={styles.gridThree}>
+                    {/* Nama coordinates */}
+                    <div>
+                      <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#4338ca'}}>Nama</div>
+                      <div style={styles.gridFour}>
+                        <select
+                          value={attendeeCoordinates[index]?.nama.page || 1}
+                          onChange={(e) => updateAttendeeCoordinates(index, 'nama', 'page', e.target.value)}
+                          style={styles.selectInput}
+                          disabled={totalPages === 0}
+                        >
+                          {totalPages > 0 ? generatePageOptions() : <option>Upload PDF</option>}
+                        </select>
+                        <input
+                          type="number"
+                          value={attendeeCoordinates[index]?.nama.x || 150}
+                          onChange={(e) => updateAttendeeCoordinates(index, 'nama', 'x', e.target.value)}
+                          style={styles.numberInput}
+                          placeholder="X"
+                        />
+                        <input
+                          type="number"
+                          value={attendeeCoordinates[index]?.nama.y || 580}
+                          onChange={(e) => updateAttendeeCoordinates(index, 'nama', 'y', e.target.value)}
+                          style={styles.numberInput}
+                          placeholder="Y"
+                        />
+                        <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
+                          ({attendeeCoordinates[index]?.nama.x || 150}, {attendeeCoordinates[index]?.nama.y || 580})
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Instansi coordinates */}
+                    <div>
+                      <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#059669'}}>Instansi</div>
+                      <div style={styles.gridFour}>
+                        <select
+                          value={attendeeCoordinates[index]?.instansiUnit.page || 1}
+                          onChange={(e) => updateAttendeeCoordinates(index, 'instansiUnit', 'page', e.target.value)}
+                          style={styles.selectInput}
+                          disabled={totalPages === 0}
+                        >
+                          {totalPages > 0 ? generatePageOptions() : <option>Upload PDF</option>}
+                        </select>
+                        <input
+                          type="number"
+                          value={attendeeCoordinates[index]?.instansiUnit.x || 250}
+                          onChange={(e) => updateAttendeeCoordinates(index, 'instansiUnit', 'x', e.target.value)}
+                          style={styles.numberInput}
+                          placeholder="X"
+                        />
+                        <input
+                          type="number"
+                          value={attendeeCoordinates[index]?.instansiUnit.y || 580}
+                          onChange={(e) => updateAttendeeCoordinates(index, 'instansiUnit', 'y', e.target.value)}
+                          style={styles.numberInput}
+                          placeholder="Y"
+                        />
+                        <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
+                          ({attendeeCoordinates[index]?.instansiUnit.x || 250}, {attendeeCoordinates[index]?.instansiUnit.y || 580})
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Contact coordinates */}
+                    <div>
+                      <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#dc2626'}}>Contact</div>
+                      <div style={styles.gridFour}>
+                        <select
+                          value={attendeeCoordinates[index]?.contact.page || 1}
+                          onChange={(e) => updateAttendeeCoordinates(index, 'contact', 'page', e.target.value)}
+                          style={styles.selectInput}
+                          disabled={totalPages === 0}
+                        >
+                          {totalPages > 0 ? generatePageOptions() : <option>Upload PDF</option>}
+                        </select>
+                        <input
+                          type="number"
+                          value={attendeeCoordinates[index]?.contact.x || 400}
+                          onChange={(e) => updateAttendeeCoordinates(index, 'contact', 'x', e.target.value)}
+                          style={styles.numberInput}
+                          placeholder="X"
+                        />
+                        <input
+                          type="number"
+                          value={attendeeCoordinates[index]?.contact.y || 580}
+                          onChange={(e) => updateAttendeeCoordinates(index, 'contact', 'y', e.target.value)}
+                          style={styles.numberInput}
+                          placeholder="Y"
+                        />
+                        <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
+                          ({attendeeCoordinates[index]?.contact.x || 400}, {attendeeCoordinates[index]?.contact.y || 580})
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
-          {/* Coordinate Controls */}
+          {/* Basic Coordinate Controls */}
           <div style={styles.section}>
-            <h3 style={{fontSize: '18px', fontWeight: '500', marginBottom: '16px', color: '#1f2937'}}>Koordinat Posisi Field</h3>
+            <h3 style={{fontSize: '18px', fontWeight: '500', marginBottom: '16px', color: '#1f2937'}}>Koordinat Posisi Field Dasar</h3>
             
-            <CoordinateControl field="namaNasabah" label="Nama Nasabah" emoji="👤" />
-            <CoordinateControl field="alamat" label="Alamat" emoji="🏠" />
-            <CoordinateControl field="namaImplementor" label="Nama Implementor" emoji="⚡" />
+            <BasicCoordinateControl field="namaNasabah" label="Nama Nasabah" emoji="👤" />
+            <BasicCoordinateControl field="alamat" label="Alamat" emoji="🏠" />
+            <BasicCoordinateControl field="namaImplementor" label="Nama Implementor" emoji="⚡" />
             
             <div style={styles.coordinateGroup}>
               <div style={styles.coordinateTitle}>
@@ -604,8 +893,8 @@ const PDFFormFiller = () => {
                   <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#4338ca'}}>Hari</div>
                   <div style={styles.gridFour}>
                     <select
-                      value={coordinates.tanggalHari.page}
-                      onChange={(e) => updateCoordinates('tanggalHari', 'page', e.target.value)}
+                      value={basicCoordinates.tanggalHari.page}
+                      onChange={(e) => updateBasicCoordinates('tanggalHari', 'page', e.target.value)}
                       style={styles.selectInput}
                       disabled={totalPages === 0}
                     >
@@ -613,20 +902,20 @@ const PDFFormFiller = () => {
                     </select>
                     <input
                       type="number"
-                      value={coordinates.tanggalHari.x}
-                      onChange={(e) => updateCoordinates('tanggalHari', 'x', e.target.value)}
+                      value={basicCoordinates.tanggalHari.x}
+                      onChange={(e) => updateBasicCoordinates('tanggalHari', 'x', e.target.value)}
                       style={styles.numberInput}
                       placeholder="X"
                     />
                     <input
                       type="number"
-                      value={coordinates.tanggalHari.y}
-                      onChange={(e) => updateCoordinates('tanggalHari', 'y', e.target.value)}
+                      value={basicCoordinates.tanggalHari.y}
+                      onChange={(e) => updateBasicCoordinates('tanggalHari', 'y', e.target.value)}
                       style={styles.numberInput}
                       placeholder="Y"
                     />
                     <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
-                      ({coordinates.tanggalHari.x}, {coordinates.tanggalHari.y})
+                      ({basicCoordinates.tanggalHari.x}, {basicCoordinates.tanggalHari.y})
                     </div>
                   </div>
                 </div>
@@ -634,8 +923,8 @@ const PDFFormFiller = () => {
                   <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#059669'}}>Bulan</div>
                   <div style={styles.gridFour}>
                     <select
-                      value={coordinates.tanggalBulan.page}
-                      onChange={(e) => updateCoordinates('tanggalBulan', 'page', e.target.value)}
+                      value={basicCoordinates.tanggalBulan.page}
+                      onChange={(e) => updateBasicCoordinates('tanggalBulan', 'page', e.target.value)}
                       style={styles.selectInput}
                       disabled={totalPages === 0}
                     >
@@ -643,20 +932,20 @@ const PDFFormFiller = () => {
                     </select>
                     <input
                       type="number"
-                      value={coordinates.tanggalBulan.x}
-                      onChange={(e) => updateCoordinates('tanggalBulan', 'x', e.target.value)}
+                      value={basicCoordinates.tanggalBulan.x}
+                      onChange={(e) => updateBasicCoordinates('tanggalBulan', 'x', e.target.value)}
                       style={styles.numberInput}
                       placeholder="X"
                     />
                     <input
                       type="number"
-                      value={coordinates.tanggalBulan.y}
-                      onChange={(e) => updateCoordinates('tanggalBulan', 'y', e.target.value)}
+                      value={basicCoordinates.tanggalBulan.y}
+                      onChange={(e) => updateBasicCoordinates('tanggalBulan', 'y', e.target.value)}
                       style={styles.numberInput}
                       placeholder="Y"
                     />
                     <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
-                      ({coordinates.tanggalBulan.x}, {coordinates.tanggalBulan.y})
+                      ({basicCoordinates.tanggalBulan.x}, {basicCoordinates.tanggalBulan.y})
                     </div>
                   </div>
                 </div>
@@ -664,8 +953,8 @@ const PDFFormFiller = () => {
                   <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#dc2626'}}>Tahun</div>
                   <div style={styles.gridFour}>
                     <select
-                      value={coordinates.tanggalTahun.page}
-                      onChange={(e) => updateCoordinates('tanggalTahun', 'page', e.target.value)}
+                      value={basicCoordinates.tanggalTahun.page}
+                      onChange={(e) => updateBasicCoordinates('tanggalTahun', 'page', e.target.value)}
                       style={styles.selectInput}
                       disabled={totalPages === 0}
                     >
@@ -673,39 +962,35 @@ const PDFFormFiller = () => {
                     </select>
                     <input
                       type="number"
-                      value={coordinates.tanggalTahun.x}
-                      onChange={(e) => updateCoordinates('tanggalTahun', 'x', e.target.value)}
+                      value={basicCoordinates.tanggalTahun.x}
+                      onChange={(e) => updateBasicCoordinates('tanggalTahun', 'x', e.target.value)}
                       style={styles.numberInput}
                       placeholder="X"
                     />
                     <input
                       type="number"
-                      value={coordinates.tanggalTahun.y}
-                      onChange={(e) => updateCoordinates('tanggalTahun', 'y', e.target.value)}
+                      value={basicCoordinates.tanggalTahun.y}
+                      onChange={(e) => updateBasicCoordinates('tanggalTahun', 'y', e.target.value)}
                       style={styles.numberInput}
                       placeholder="Y"
                     />
                     <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
-                      ({coordinates.tanggalTahun.x}, {coordinates.tanggalTahun.y})
+                      ({basicCoordinates.tanggalTahun.x}, {basicCoordinates.tanggalTahun.y})
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-
-            <CoordinateControl field="nama" label="Nama" emoji="📝" />
-            <CoordinateControl field="instansiUnit" label="Instansi Unit" emoji="🏢" />
-            <CoordinateControl field="contact" label="Contact" emoji="📞" />
           </div>
 
           {/* Action Buttons */}
           <div style={styles.buttonGroup}>
             <button
               onClick={handleGeneratePDF}
-              disabled={!pdfFile || Object.values(formData).some(val => !val.trim()) || isProcessing}
+              disabled={!isFormComplete() || isProcessing}
               style={{
                 ...styles.primaryButton,
-                ...((!pdfFile || Object.values(formData).some(val => !val.trim()) || isProcessing) ? styles.disabledButton : {})
+                ...(!isFormComplete() || isProcessing ? styles.disabledButton : {})
               }}
             >
               <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -735,12 +1020,14 @@ const PDFFormFiller = () => {
           <h3 style={styles.infoTitle}>Catatan Penting:</h3>
           <ul style={styles.infoList}>
             <li><strong>Upload PDF template</strong> - aplikasi akan mendeteksi jumlah halaman</li>
-            <li><strong>Isi semua field</strong> - nama nasabah, alamat, nama implementor, tanggal (3 box), nama, instansi unit, contact</li>
-            <li><strong>Tanggal terpisah</strong> - ada 3 box koordinat untuk hari, bulan, tahun (bisa diposisikan terpisah)</li>
+            <li><strong>Isi semua field dasar</strong> - nama nasabah, alamat, nama implementor, tanggal (3 box)</li>
+            <li><strong>Tambah/hapus peserta</strong> - klik tombol + untuk menambah peserta (maksimal 10), tombol - untuk menghapus</li>
+            <li><strong>Setiap peserta memiliki 3 field</strong> - nama, instansi unit, contact</li>
+            <li><strong>Koordinat terpisah per peserta</strong> - setiap peserta punya koordinat nama, instansi, dan contact sendiri</li>
+            <li><strong>10 baris tersedia</strong> - sesuai dengan format PDF yang memiliki 10 baris untuk kehadiran</li>
             <li><strong>Koordinat Y</strong> - dimulai dari bawah halaman (semakin tinggi nilai Y, semakin ke atas)</li>
             <li><strong>Koordinat X</strong> - dimulai dari kiri halaman (semakin tinggi nilai X, semakin ke kanan)</li>
-            <li><strong>Setiap field punya koordinat sendiri</strong> - bisa di halaman berbeda</li>
-            <li><strong>Preview koordinat</strong> - ditampilkan di sebelah kanan setiap field</li>
+            <li><strong>Preview koordinat</strong> - ditampilkan di sebelah kanan setiap field untuk memudahkan pengecekan</li>
           </ul>
         </div>
       </div>
