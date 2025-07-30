@@ -30,16 +30,16 @@ const PDFFormFiller = () => {
   });
 
   const [attendeeCoordinates, setAttendeeCoordinates] = useState([
-    { nama: { x: 100, y: 200, page: 3 }, instansiUnit: { x: 200, y: 200, page: 3 }, contact: { x: 300, y: 200, page: 3 } },
-    { nama: { x: 120, y: 220, page: 3 }, instansiUnit: { x: 300, y: 220, page: 3 }, contact: { x: 300, y: 220, page: 3 } },
-    { nama: { x: 150, y: 540, page: 3 }, instansiUnit: { x: 250, y: 540, page: 3 }, contact: { x: 400, y: 540, page: 3 } },
-    { nama: { x: 150, y: 520, page: 3 }, instansiUnit: { x: 250, y: 520, page: 3 }, contact: { x: 400, y: 520, page: 3 } },
-    { nama: { x: 150, y: 500, page: 3 }, instansiUnit: { x: 250, y: 500, page: 3 }, contact: { x: 400, y: 500, page: 3 } },
-    { nama: { x: 150, y: 480, page: 3 }, instansiUnit: { x: 250, y: 480, page: 3 }, contact: { x: 400, y: 480, page: 3 } },
-    { nama: { x: 150, y: 460, page: 3 }, instansiUnit: { x: 250, y: 460, page: 3 }, contact: { x: 400, y: 460, page: 3 } },
-    { nama: { x: 150, y: 440, page: 3 }, instansiUnit: { x: 250, y: 440, page: 3 }, contact: { x: 400, y: 440, page: 3 } },
-    { nama: { x: 150, y: 420, page: 3 }, instansiUnit: { x: 250, y: 420, page: 3 }, contact: { x: 400, y: 420, page: 3 } },
-    { nama: { x: 150, y: 400, page: 3 }, instansiUnit: { x: 250, y: 400, page: 3 }, contact: { x: 400, y: 400, page: 3 } }
+    { nama: { x: 95, y: 690, page: 3 }, instansiUnit: { x: 205, y: 690, page: 3 }, contact: { x: 290, y: 690, page: 3 } },
+    { nama: { x: 95, y: 662, page: 3 }, instansiUnit: { x: 205, y: 662, page: 3 }, contact: { x: 290, y: 662, page: 3 } },
+    { nama: { x: 95, y: 634, page: 3 }, instansiUnit: { x: 205, y: 634, page: 3 }, contact: { x: 290, y: 634, page: 3 } },
+    { nama: { x: 95, y: 606, page: 3 }, instansiUnit: { x: 205, y: 606, page: 3 }, contact: { x: 290, y: 606, page: 3 } },
+    { nama: { x: 95, y: 578, page: 3 }, instansiUnit: { x: 205, y: 578, page: 3 }, contact: { x: 290, y: 578, page: 3 } },
+    { nama: { x: 95, y: 550, page: 3 }, instansiUnit: { x: 205, y: 550, page: 3 }, contact: { x: 290, y: 550, page: 3 } },
+    { nama: { x: 95, y: 522, page: 3 }, instansiUnit: { x: 205, y: 522, page: 3 }, contact: { x: 290, y: 522, page: 3 } },
+    { nama: { x: 95, y: 494, page: 3 }, instansiUnit: { x: 205, y: 494, page: 3 }, contact: { x: 290, y: 494, page: 3 } },
+    { nama: { x: 95, y: 466, page: 3 }, instansiUnit: { x: 205, y: 466, page: 3 }, contact: { x: 290, y: 466, page: 3 } },
+    { nama: { x: 95, y: 438, page: 3 }, instansiUnit: { x: 205, y: 438, page: 3 }, contact: { x: 290, y: 438, page: 3 } }
   ]);
 
   const styles = {
