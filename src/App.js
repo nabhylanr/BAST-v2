@@ -633,6 +633,17 @@ const PDFFormFiller = () => {
                 )}
               </div>
             </div>
+            {/* PDF Preview */}
+            {pdfUrl && (
+              <div style={styles.preview}>
+                <h3 style={styles.sectionTitle}>PDF Preview</h3>
+                <iframe 
+                  src={pdfUrl} 
+                  style={styles.iframe}
+                  title="PDF Preview" 
+                />
+              </div>
+            )}
 
             {/* Customer Profile */}
             <div style={styles.sectionCard}>
@@ -922,18 +933,6 @@ const PDFFormFiller = () => {
                 Reset
               </button>
             </div>
-
-            {/* PDF Preview */}
-            {pdfUrl && (
-              <div style={styles.preview}>
-                <h3 style={styles.sectionTitle}>PDF Preview</h3>
-                <iframe 
-                  src={pdfUrl} 
-                  style={styles.iframe}
-                  title="PDF Preview" 
-                />
-              </div>
-            )}
           </div>
         </div>
 
