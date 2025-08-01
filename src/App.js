@@ -31,7 +31,7 @@ const PDFFormFiller = () => {
     tanggalHari: { x: 210, y: 613, page: 1 },
     tanggalBulan: { x: 355, y: 613, page: 1 },
     tanggalTahun: { x: 470, y: 613, page: 1 },
-    signature: { x: 100, y: 220, page: 1 }
+    signature: { x: 70, y: 220, page: 1 }
   });
 
   const [attendeeCoordinates, setAttendeeCoordinates] = useState([
@@ -509,13 +509,25 @@ const PDFFormFiller = () => {
         const signatureCoord = basicCoordinates.signature;
         const page = pages[signatureCoord.page - 1];
         
+        // Konversi dari PNG ke format yang lebih konsisten
+        const canvas = signatureCanvasRef.current;
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        
+        // Hitung rasio aspek asli dari canvas
+        const aspectRatio = canvasWidth / canvasHeight;
+        
+        // Tentukan ukuran di PDF dengan mempertahankan aspect ratio
+        const pdfSignatureWidth = 180; // lebar maksimal di PDF
+        const pdfSignatureHeight = pdfSignatureWidth / aspectRatio;
+        
         const signatureImage = await pdfDoc.embedPng(signatureData);
         
         page.drawImage(signatureImage, {
           x: signatureCoord.x,
           y: signatureCoord.y,
-          width: 150,
-          height: 50,
+          width: pdfSignatureWidth,
+          height: pdfSignatureHeight,
         });
       }
       
@@ -760,8 +772,8 @@ const PDFFormFiller = () => {
                 <label style={styles.label}>Draw your signature below:</label>
                 <canvas
                   ref={signatureCanvasRef}
-                  width={900}
-                  height={150}
+                  width={800}
+                  height={200}
                   style={styles.signatureCanvas}
                   onMouseDown={startDrawing}
                   onMouseMove={draw}
@@ -782,7 +794,7 @@ const PDFFormFiller = () => {
                 {signatureData && (
                   <div style={styles.signaturePreview}>
                     <p style={{...styles.label, margin: '0 0 8px 0'}}>Signature Preview:</p>
-                    <img src={signatureData} alt="Signature preview" style={{maxWidth: '200px', border: '1px solid #dedede', borderRadius: '4px'}} />
+                    <img src={signatureData} alt="Signature preview" style={{maxWidth: '300px', height: 'auto', border: '1px solid #dedede', borderRadius: '4px'}} />
                   </div>
                 )}
               </div>
@@ -906,6 +918,10 @@ const PDFFormFiller = () => {
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
               <span><strong>Draw digital signature</strong> - Use mouse to draw your signature on the canvas, click "Clear Signature" to redraw</span>
+            </li>
+            <li style={styles.infoItem}>
+              <span style={styles.bullet}>•</span>
+              <span><strong>Signature aspect ratio preserved</strong> - The signature will maintain its original proportions in the PDF</span>
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
