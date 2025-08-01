@@ -45,7 +45,7 @@ const PDFFormFiller = () => {
   const styles = {
     container: {
       minHeight: '100vh',
-      backgroundColor: '#fff',
+      backgroundColor: '#fafafa',
       padding: '32px 16px',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     },
@@ -56,13 +56,13 @@ const PDFFormFiller = () => {
     mainCard: {
       backgroundColor: '#fff',
       borderRadius: '12px',
-      boxShadow: '0 0 0 1px #ccc',
-      border: '1px solid #ccc',
+      boxShadow: '0 0 0 1px #dedede',
+      border: '0.5px solid #dedede',
       overflow: 'hidden'
     },
     header: {
       padding: '24px 32px',
-      borderBottom: '1px solid #ccc',
+      borderBottom: '1px solid #dedede',
       display: 'flex',
       alignItems: 'center',
       gap: '12px'
@@ -86,7 +86,7 @@ const PDFFormFiller = () => {
     },
     title: {
       fontSize: '24px',
-      fontWeight: '600',
+      fontWeight: '700',
       color: '#000',
       margin: 0,
       lineHeight: '1.2'
@@ -111,7 +111,7 @@ const PDFFormFiller = () => {
       backgroundColor: '#ffffffff',
       borderRadius: '8px',
       padding: '24px',
-      border: '1px solid #ccc'
+      border: '1px solid #dedede'
     },
     sectionTitle: {
       fontSize: '18px',
@@ -129,9 +129,9 @@ const PDFFormFiller = () => {
     input: {
       width: '100%',
       padding: '12px 16px',
-      border: '1px solid #ccc',
+      border: '1px solid #dedede',
       borderRadius: '6px',
-      fontSize: '16px',
+      fontSize: '14px',
       backgroundColor: '#fff',
       transition: 'border-color 0.2s, box-shadow 0.2s',
       outline: 'none',
@@ -139,7 +139,7 @@ const PDFFormFiller = () => {
       color: '#000'
     },
     inputFocus: {
-      borderColor: '#000',
+      borderColor: '#dedede',
       boxShadow: '0 0 0 2px rgba(0, 0, 0, 0.1)'
     },
     grid: {
@@ -153,7 +153,7 @@ const PDFFormFiller = () => {
       gridTemplateColumns: 'repeat(3, 1fr)'
     },
     uploadArea: {
-      border: '2px dashed #ccc',
+      border: '2px dashed #dedede',
       borderRadius: '8px',
       padding: '32px',
       textAlign: 'center',
@@ -171,7 +171,7 @@ const PDFFormFiller = () => {
       display: 'inline-flex',
       alignItems: 'center',
       padding: '8px 16px',
-      border: '1px solid #ccc',
+      border: '1px solid #dedede',
       borderRadius: '6px',
       backgroundColor: '#fff',
       color: '#000',
@@ -205,9 +205,9 @@ const PDFFormFiller = () => {
     dateInput: {
       width: '100%',
       padding: '12px 16px',
-      border: '1px solid #ccc',
+      border: '1px solid #dedede',
       borderRadius: '6px',
-      fontSize: '16px',
+      fontSize: '14px',
       backgroundColor: '#fff',
       textAlign: 'center',
       outline: 'none',
@@ -228,7 +228,7 @@ const PDFFormFiller = () => {
     },
     attendeeCard: {
       backgroundColor: '#fff',
-      border: '1px solid #ccc',
+      border: '1px solid #dedede',
       borderRadius: '8px',
       padding: '16px',
       marginBottom: '16px'
@@ -264,7 +264,7 @@ const PDFFormFiller = () => {
       padding: '6px 8px',
       backgroundColor: '#f0f0f0',
       color: '#000',
-      border: '1px solid #ccc',
+      border: '1px solid #dedede',
       borderRadius: '4px',
       fontSize: '12px',
       fontWeight: '500',
@@ -272,7 +272,7 @@ const PDFFormFiller = () => {
       transition: 'background-color 0.2s'
     },
     buttonDisabled: {
-      backgroundColor: '#ddd',
+      backgroundColor: '#dedede',
       cursor: 'not-allowed',
       color: '#666'
     },
@@ -280,7 +280,7 @@ const PDFFormFiller = () => {
       display: 'flex',
       gap: '16px',
       paddingTop: '24px',
-      borderTop: '1px solid #ccc'
+      borderTop: '1px solid #dedede'
     },
     buttonLarge: {
       flex: 1,
@@ -288,8 +288,8 @@ const PDFFormFiller = () => {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '12px 24px',
-      fontSize: '16px',
-      fontWeight: '500',
+      fontSize: '14px',
+      fontWeight: '700',
       borderRadius: '6px',
       cursor: 'pointer',
       transition: 'all 0.2s',
@@ -303,16 +303,16 @@ const PDFFormFiller = () => {
     buttonLargeSecondary: {
       backgroundColor: '#fff',
       color: '#000',
-      border: '1px solid #ccc'
+      border: '1px solid #dedede'
     },
     preview: {
       paddingTop: '24px',
-      borderTop: '1px solid #ccc'
+      borderTop: '1px solid #dedede'
     },
     iframe: {
       width: '100%',
       height: '384px',
-      border: '1px solid #ccc',
+      border: '1px solid #dedede',
       borderRadius: '8px'
     },
     infoCard: {
@@ -584,7 +584,7 @@ const PDFFormFiller = () => {
           <div style={styles.content}>
             {/* Upload Section */}
             <div style={styles.section}>
-              <label style={styles.label}>Upload PDF Template</label>
+              <label style={styles.sectionTitle}>Upload PDF Template</label>
               <div 
                 style={styles.uploadArea}
                 onClick={() => fileInputRef.current?.click()}
@@ -964,18 +964,6 @@ const PDFFormFiller = () => {
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
               <span><strong>10 rows available</strong> - According to the PDF format which has 10 rows for attendance</span>
-            </li>
-            <li style={styles.infoItem}>
-              <span style={styles.bullet}>•</span>
-              <span><strong>Y coordinate</strong> - Starts from bottom of page (higher Y value = higher position)</span>
-            </li>
-            <li style={styles.infoItem}>
-              <span style={styles.bullet}>•</span>
-              <span><strong>X coordinate</strong> - Starts from left of page (higher X value = more to the right)</span>
-            </li>
-            <li style={styles.infoItem}>
-              <span style={styles.bullet}>•</span>
-              <span><strong>Coordinate preview</strong> - Displayed next to each field for easy checking</span>
             </li>
           </ul>
         </div>
