@@ -19,6 +19,10 @@ const PDFFormFiller = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
   const fileInputRef = useRef(null);
+  
+  const signatureCanvasRef = useRef(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [signatureData, setSignatureData] = useState(null);
 
   const [basicCoordinates, setBasicCoordinates] = useState({
     namaNasabah: { x: 210, y: 700, page: 1 },
@@ -26,7 +30,8 @@ const PDFFormFiller = () => {
     namaImplementor: { x: 210, y: 627, page: 1 },
     tanggalHari: { x: 210, y: 613, page: 1 },
     tanggalBulan: { x: 355, y: 613, page: 1 },
-    tanggalTahun: { x: 470, y: 613, page: 1 }
+    tanggalTahun: { x: 470, y: 613, page: 1 },
+    signature: { x: 100, y: 220, page: 1 }
   });
 
   const [attendeeCoordinates, setAttendeeCoordinates] = useState([
@@ -346,7 +351,66 @@ const PDFFormFiller = () => {
     },
     hiddenInput: {
       display: 'none'
+    },
+    signatureContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px'
+    },
+    signatureCanvas: {
+      border: '2px solid #dedede',
+      borderRadius: '8px',
+      cursor: 'crosshair',
+      backgroundColor: '#fff'
+    },
+    signatureButtons: {
+      display: 'flex',
+      gap: '8px'
+    },
+    signaturePreview: {
+      marginTop: '12px',
+      padding: '12px',
+      backgroundColor: '#f9f9f9',
+      borderRadius: '6px',
+      border: '1px solid #dedede'
     }
+  };
+
+  const startDrawing = (e) => {
+    setIsDrawing(true);
+    const canvas = signatureCanvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const ctx = canvas.getContext('2d');
+    ctx.beginPath();
+    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+  };
+
+  const draw = (e) => {
+    if (!isDrawing) return;
+    const canvas = signatureCanvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const ctx = canvas.getContext('2d');
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#000';
+    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    if (isDrawing) {
+      setIsDrawing(false);
+      const canvas = signatureCanvasRef.current;
+      const signatureDataUrl = canvas.toDataURL();
+      setSignatureData(signatureDataUrl);
+    }
+  };
+
+  const clearSignature = () => {
+    const canvas = signatureCanvasRef.current;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setSignatureData(null);
   };
 
   const handleFileUpload = async (event) => {
@@ -396,28 +460,6 @@ const PDFFormFiller = () => {
     }
   };
 
-  const updateBasicCoordinates = (field, axis, value) => {
-    setBasicCoordinates(prev => ({
-      ...prev,
-      [field]: {
-        ...prev[field],
-        [axis]: axis === 'page' ? parseInt(value) : parseInt(value) || 0
-      }
-    }));
-  };
-
-  const updateAttendeeCoordinates = (attendeeIndex, field, axis, value) => {
-    setAttendeeCoordinates(prev => prev.map((coord, i) => 
-      i === attendeeIndex ? {
-        ...coord,
-        [field]: {
-          ...coord[field],
-          [axis]: axis === 'page' ? parseInt(value) : parseInt(value) || 0
-        }
-      } : coord
-    ));
-  };
-
   const handleGeneratePDF = async () => {
     const basicRequiredFields = ['namaNasabah', 'alamat', 'namaImplementor', 'tanggalHari', 'tanggalBulan', 'tanggalTahun'];
     const missingBasicFields = basicRequiredFields.filter(field => !formData[field].trim());
@@ -462,6 +504,20 @@ const PDFFormFiller = () => {
           });
         }
       });
+      
+      if (signatureData) {
+        const signatureCoord = basicCoordinates.signature;
+        const page = pages[signatureCoord.page - 1];
+        
+        const signatureImage = await pdfDoc.embedPng(signatureData);
+        
+        page.drawImage(signatureImage, {
+          x: signatureCoord.x,
+          y: signatureCoord.y,
+          width: 150,
+          height: 50,
+        });
+      }
       
       attendees.forEach((attendee, index) => {
         if (index < attendeeCoordinates.length) {
@@ -536,23 +592,14 @@ const PDFFormFiller = () => {
       namaImplementor: { x: 150, y: 640, page: 1 },
       tanggalHari: { x: 150, y: 610, page: 1 },
       tanggalBulan: { x: 200, y: 610, page: 1 },
-      tanggalTahun: { x: 280, y: 610, page: 1 }
+      tanggalTahun: { x: 280, y: 610, page: 1 },
+      signature: { x: 400, y: 200, page: 1 }
     });
+    setSignatureData(null);
+    clearSignature();
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  };
-
-  const generatePageOptions = () => {
-    const options = [];
-    for (let i = 1; i <= totalPages; i++) {
-      options.push(
-        <option key={i} value={i}>
-          Hal {i}
-        </option>
-      );
-    }
-    return options;
   };
 
   const isFormComplete = () => {
@@ -566,9 +613,7 @@ const PDFFormFiller = () => {
   return (
     <div style={styles.container}>
       <div style={styles.wrapper}>
-        {/* Main Card */}
         <div style={styles.mainCard}>
-          {/* Header */}
           <div style={styles.header}>
             <div style={styles.iconContainer}>
               <svg style={styles.icon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -582,18 +627,11 @@ const PDFFormFiller = () => {
           </div>
 
           <div style={styles.content}>
-            {/* Upload Section */}
             <div style={styles.section}>
               <label style={styles.sectionTitle}>Upload PDF Template</label>
               <div 
                 style={styles.uploadArea}
                 onClick={() => fileInputRef.current?.click()}
-                onMouseEnter={(e) => {
-                  e.target.style.borderColor = '#9ca3af';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.borderColor = '#d1d5db';
-                }}
               >
                 <svg style={styles.uploadIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -606,15 +644,7 @@ const PDFFormFiller = () => {
                   style={styles.hiddenInput}
                 />
                 <div>
-                  <button 
-                    style={styles.uploadButton}
-                    onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = '#f3f4f6';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = 'white';
-                    }}
-                  >
+                  <button style={styles.uploadButton}>
                     Choose PDF File
                   </button>
                   <p style={styles.uploadInfo}>or drag and drop</p>
@@ -633,7 +663,7 @@ const PDFFormFiller = () => {
                 )}
               </div>
             </div>
-            {/* PDF Preview */}
+
             {pdfUrl && (
               <div style={styles.preview}>
                 <h3 style={styles.sectionTitle}>PDF Preview</h3>
@@ -645,7 +675,6 @@ const PDFFormFiller = () => {
               </div>
             )}
 
-            {/* Customer Profile */}
             <div style={styles.sectionCard}>
               <h3 style={styles.sectionTitle}>Customer Profile</h3>
               <div style={{...styles.grid, ...styles.gridCols2}}>
@@ -657,14 +686,6 @@ const PDFFormFiller = () => {
                     onChange={(e) => updateFormData('namaNasabah', e.target.value)}
                     style={styles.input}
                     placeholder="Enter customer name"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = styles.inputFocus.borderColor;
-                      e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#d1d5db';
-                      e.target.style.boxShadow = 'none';
-                    }}
                   />
                 </div>
                 <div>
@@ -675,20 +696,11 @@ const PDFFormFiller = () => {
                     onChange={(e) => updateFormData('alamat', e.target.value)}
                     style={styles.input}
                     placeholder="Enter address"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = styles.inputFocus.borderColor;
-                      e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#d1d5db';
-                      e.target.style.boxShadow = 'none';
-                    }}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Implementation Profile */}
             <div style={styles.sectionCard}>
               <h3 style={styles.sectionTitle}>Implementation Profile</h3>
               <div style={styles.section}>
@@ -700,14 +712,6 @@ const PDFFormFiller = () => {
                     onChange={(e) => updateFormData('namaImplementor', e.target.value)}
                     style={styles.input}
                     placeholder="Enter implementor name"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = styles.inputFocus.borderColor;
-                      e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#d1d5db';
-                      e.target.style.boxShadow = 'none';
-                    }}
                   />
                 </div>
                 <div>
@@ -721,14 +725,6 @@ const PDFFormFiller = () => {
                         maxLength="2"
                         style={styles.dateInput}
                         placeholder="DD"
-                        onFocus={(e) => {
-                          e.target.style.borderColor = styles.inputFocus.borderColor;
-                          e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = '#d1d5db';
-                          e.target.style.boxShadow = 'none';
-                        }}
                       />
                       <p style={styles.dateLabel}>Day</p>
                     </div>
@@ -739,14 +735,6 @@ const PDFFormFiller = () => {
                         onChange={(e) => updateFormData('tanggalBulan', e.target.value)}
                         style={styles.dateInput}
                         placeholder="MM"
-                        onFocus={(e) => {
-                          e.target.style.borderColor = styles.inputFocus.borderColor;
-                          e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = '#d1d5db';
-                          e.target.style.boxShadow = 'none';
-                        }}
                       />
                       <p style={styles.dateLabel}>Month</p>
                     </div>
@@ -758,14 +746,6 @@ const PDFFormFiller = () => {
                         maxLength="4"
                         style={styles.dateInput}
                         placeholder="YYYY"
-                        onFocus={(e) => {
-                          e.target.style.borderColor = styles.inputFocus.borderColor;
-                          e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = '#d1d5db';
-                          e.target.style.boxShadow = 'none';
-                        }}
                       />
                       <p style={styles.dateLabel}>Year</p>
                     </div>
@@ -774,7 +754,40 @@ const PDFFormFiller = () => {
               </div>
             </div>
 
-            {/* Attendees Section */}
+            <div style={styles.sectionCard}>
+              <h3 style={styles.sectionTitle}>Digital Signature</h3>
+              <div style={styles.signatureContainer}>
+                <label style={styles.label}>Draw your signature below:</label>
+                <canvas
+                  ref={signatureCanvasRef}
+                  width={900}
+                  height={150}
+                  style={styles.signatureCanvas}
+                  onMouseDown={startDrawing}
+                  onMouseMove={draw}
+                  onMouseUp={stopDrawing}
+                  onMouseLeave={stopDrawing}
+                />
+                <div style={styles.signatureButtons}>
+                  <button
+                    onClick={clearSignature}
+                    style={styles.buttonDanger}
+                  >
+                    <svg style={{width: '12px', height: '12px', marginRight: '4px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Clear Signature
+                  </button>
+                </div>
+                {signatureData && (
+                  <div style={styles.signaturePreview}>
+                    <p style={{...styles.label, margin: '0 0 8px 0'}}>Signature Preview:</p>
+                    <img src={signatureData} alt="Signature preview" style={{maxWidth: '200px', border: '1px solid #dedede', borderRadius: '4px'}} />
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div style={styles.sectionCard}>
               <div style={styles.attendeesHeader}>
                 <h3 style={styles.sectionTitle}>
@@ -786,16 +799,6 @@ const PDFFormFiller = () => {
                   style={{
                     ...styles.buttonPrimary,
                     ...(attendees.length >= 10 ? styles.buttonDisabled : {})
-                  }}
-                  onMouseEnter={(e) => {
-                    if (attendees.length < 10) {
-                      e.target.style.backgroundColor = 'black';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (attendees.length < 10) {
-                      e.target.style.backgroundColor = 'black';
-                    }
                   }}
                 >
                   <svg style={{width: '16px', height: '16px', marginRight: '4px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -814,12 +817,6 @@ const PDFFormFiller = () => {
                         <button
                           onClick={() => removeAttendee(index)}
                           style={styles.buttonDanger}
-                          onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#f0f0f0';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = '#f0f0f0';
-                          }}
                         >
                           <svg style={{width: '12px', height: '12px', marginRight: '4px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -838,14 +835,6 @@ const PDFFormFiller = () => {
                           onChange={(e) => updateAttendee(index, 'nama', e.target.value)}
                           style={styles.input}
                           placeholder="Enter name"
-                          onFocus={(e) => {
-                            e.target.style.borderColor = styles.inputFocus.borderColor;
-                            e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                          }}
-                          onBlur={(e) => {
-                            e.target.style.borderColor = '#d1d5db';
-                            e.target.style.boxShadow = 'none';
-                          }}
                         />
                       </div>
                       <div>
@@ -856,14 +845,6 @@ const PDFFormFiller = () => {
                           onChange={(e) => updateAttendee(index, 'instansiUnit', e.target.value)}
                           style={styles.input}
                           placeholder="Enter institution"
-                          onFocus={(e) => {
-                            e.target.style.borderColor = styles.inputFocus.borderColor;
-                            e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                          }}
-                          onBlur={(e) => {
-                            e.target.style.borderColor = '#d1d5db';
-                            e.target.style.boxShadow = 'none';
-                          }}
                         />
                       </div>
                       <div>
@@ -874,14 +855,6 @@ const PDFFormFiller = () => {
                           onChange={(e) => updateAttendee(index, 'contact', e.target.value)}
                           style={styles.input}
                           placeholder="Enter contact"
-                          onFocus={(e) => {
-                            e.target.style.borderColor = styles.inputFocus.borderColor;
-                            e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                          }}
-                          onBlur={(e) => {
-                            e.target.style.borderColor = '#d1d5db';
-                            e.target.style.boxShadow = 'none';
-                          }}
                         />
                       </div>
                     </div>
@@ -890,7 +863,6 @@ const PDFFormFiller = () => {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div style={styles.actionButtons}>
               <button
                 onClick={handleGeneratePDF}
@@ -899,16 +871,6 @@ const PDFFormFiller = () => {
                   ...styles.buttonLarge,
                   ...styles.buttonLargePrimary,
                   ...(!isFormComplete() || isProcessing ? styles.buttonDisabled : {})
-                }}
-                onMouseEnter={(e) => {
-                  if (isFormComplete() && !isProcessing) {
-                    e.target.style.backgroundColor = 'black';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (isFormComplete() && !isProcessing) {
-                    e.target.style.backgroundColor = 'black';
-                  }
                 }}
               >
                 <svg style={{width: '20px', height: '20px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -923,12 +885,6 @@ const PDFFormFiller = () => {
                   ...styles.buttonLarge,
                   ...styles.buttonLargeSecondary
                 }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#f3f4f6';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'white';
-                }}
               >
                 Reset
               </button>
@@ -936,7 +892,6 @@ const PDFFormFiller = () => {
           </div>
         </div>
 
-        {/* Instructions Card */}
         <div style={styles.infoCard}>
           <h3 style={styles.infoTitle}>Important Notes</h3>
           <ul style={styles.infoList}>
@@ -947,6 +902,10 @@ const PDFFormFiller = () => {
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
               <span><strong>Fill all basic fields</strong> - Customer name, address, implementor name, date (3 boxes)</span>
+            </li>
+            <li style={styles.infoItem}>
+              <span style={styles.bullet}>•</span>
+              <span><strong>Draw digital signature</strong> - Use mouse to draw your signature on the canvas, click "Clear Signature" to redraw</span>
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
