@@ -42,11 +42,10 @@ const PDFFormFiller = () => {
     { nama: { x: 95, y: 438, page: 3 }, instansiUnit: { x: 205, y: 438, page: 3 }, contact: { x: 290, y: 438, page: 3 } }
   ]);
 
-  // Modern styles object
   const styles = {
     container: {
       minHeight: '100vh',
-      backgroundColor: '#f8fafc',
+      backgroundColor: '#fff',
       padding: '32px 16px',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     },
@@ -55,15 +54,15 @@ const PDFFormFiller = () => {
       margin: '0 auto'
     },
     mainCard: {
-      backgroundColor: 'white',
+      backgroundColor: '#fff',
       borderRadius: '12px',
-      boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-      border: '1px solid #e2e8f0',
+      boxShadow: '0 0 0 1px #ccc',
+      border: '1px solid #ccc',
       overflow: 'hidden'
     },
     header: {
       padding: '24px 32px',
-      borderBottom: '1px solid #e2e8f0',
+      borderBottom: '1px solid #ccc',
       display: 'flex',
       alignItems: 'center',
       gap: '12px'
@@ -71,7 +70,7 @@ const PDFFormFiller = () => {
     iconContainer: {
       width: '40px',
       height: '40px',
-      backgroundColor: '#dbeafe',
+      backgroundColor: '#f0f0f0',
       borderRadius: '8px',
       display: 'flex',
       alignItems: 'center',
@@ -80,7 +79,7 @@ const PDFFormFiller = () => {
     icon: {
       width: '24px',
       height: '24px',
-      color: '#2563eb'
+      color: '#000'
     },
     headerText: {
       flex: 1
@@ -88,13 +87,13 @@ const PDFFormFiller = () => {
     title: {
       fontSize: '24px',
       fontWeight: '600',
-      color: '#111827',
+      color: '#000',
       margin: 0,
       lineHeight: '1.2'
     },
     subtitle: {
       fontSize: '14px',
-      color: '#6b7280',
+      color: '#666',
       margin: '4px 0 0 0'
     },
     content: {
@@ -109,38 +108,39 @@ const PDFFormFiller = () => {
       gap: '12px'
     },
     sectionCard: {
-      backgroundColor: '#f8fafc',
+      backgroundColor: '#ffffffff',
       borderRadius: '8px',
       padding: '24px',
-      border: '1px solid #e2e8f0'
+      border: '1px solid #ccc'
     },
     sectionTitle: {
       fontSize: '18px',
-      fontWeight: '500',
-      color: '#111827',
+      fontWeight: '700',
+      color: '#000',
       margin: '0 0 16px 0'
     },
     label: {
       display: 'block',
       fontSize: '14px',
       fontWeight: '500',
-      color: '#374151',
+      color: '#222',
       marginBottom: '8px'
     },
     input: {
       width: '100%',
       padding: '12px 16px',
-      border: '1px solid #d1d5db',
+      border: '1px solid #ccc',
       borderRadius: '6px',
       fontSize: '16px',
-      backgroundColor: 'white',
+      backgroundColor: '#fff',
       transition: 'border-color 0.2s, box-shadow 0.2s',
       outline: 'none',
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      color: '#000'
     },
     inputFocus: {
-      borderColor: '#2563eb',
-      boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.1)'
+      borderColor: '#000',
+      boxShadow: '0 0 0 2px rgba(0, 0, 0, 0.1)'
     },
     grid: {
       display: 'grid',
@@ -153,28 +153,28 @@ const PDFFormFiller = () => {
       gridTemplateColumns: 'repeat(3, 1fr)'
     },
     uploadArea: {
-      border: '2px dashed #d1d5db',
+      border: '2px dashed #ccc',
       borderRadius: '8px',
       padding: '32px',
       textAlign: 'center',
       cursor: 'pointer',
-      backgroundColor: '#f8fafc',
+      backgroundColor: '#fafafa',
       transition: 'border-color 0.2s'
     },
     uploadIcon: {
       width: '48px',
       height: '48px',
-      color: '#9ca3af',
+      color: '#888',
       margin: '0 auto 16px'
     },
     uploadButton: {
       display: 'inline-flex',
       alignItems: 'center',
       padding: '8px 16px',
-      border: '1px solid #d1d5db',
+      border: '1px solid #ccc',
       borderRadius: '6px',
-      backgroundColor: 'white',
-      color: '#374151',
+      backgroundColor: '#fff',
+      color: '#000',
       fontSize: '14px',
       fontWeight: '500',
       cursor: 'pointer',
@@ -182,19 +182,19 @@ const PDFFormFiller = () => {
     },
     uploadInfo: {
       fontSize: '14px',
-      color: '#6b7280',
+      color: '#666',
       marginTop: '8px'
     },
     fileInfo: {
       marginTop: '16px',
       padding: '12px',
-      backgroundColor: '#dbeafe',
+      backgroundColor: '#eee',
       borderRadius: '6px'
     },
     fileInfoText: {
       fontSize: '14px',
       fontWeight: '500',
-      color: '#1e40af',
+      color: '#000',
       margin: 0
     },
     dateContainer: {
@@ -205,17 +205,18 @@ const PDFFormFiller = () => {
     dateInput: {
       width: '100%',
       padding: '12px 16px',
-      border: '1px solid #d1d5db',
+      border: '1px solid #ccc',
       borderRadius: '6px',
       fontSize: '16px',
-      backgroundColor: 'white',
+      backgroundColor: '#fff',
       textAlign: 'center',
       outline: 'none',
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      color: '#000'
     },
     dateLabel: {
       fontSize: '12px',
-      color: '#6b7280',
+      color: '#666',
       textAlign: 'center',
       marginTop: '4px'
     },
@@ -226,8 +227,8 @@ const PDFFormFiller = () => {
       marginBottom: '16px'
     },
     attendeeCard: {
-      backgroundColor: 'white',
-      border: '1px solid #e2e8f0',
+      backgroundColor: '#fff',
+      border: '1px solid #ccc',
       borderRadius: '8px',
       padding: '16px',
       marginBottom: '16px'
@@ -241,15 +242,15 @@ const PDFFormFiller = () => {
     attendeeTitle: {
       fontSize: '14px',
       fontWeight: '500',
-      color: '#111827',
+      color: '#000',
       margin: 0
     },
     buttonPrimary: {
       display: 'inline-flex',
       alignItems: 'center',
       padding: '8px 12px',
-      backgroundColor: '#10b981',
-      color: 'white',
+      backgroundColor: '#000',
+      color: '#fff',
       border: 'none',
       borderRadius: '6px',
       fontSize: '14px',
@@ -261,9 +262,9 @@ const PDFFormFiller = () => {
       display: 'inline-flex',
       alignItems: 'center',
       padding: '6px 8px',
-      backgroundColor: '#fee2e2',
-      color: '#dc2626',
-      border: '1px solid #fecaca',
+      backgroundColor: '#f0f0f0',
+      color: '#000',
+      border: '1px solid #ccc',
       borderRadius: '4px',
       fontSize: '12px',
       fontWeight: '500',
@@ -271,14 +272,15 @@ const PDFFormFiller = () => {
       transition: 'background-color 0.2s'
     },
     buttonDisabled: {
-      backgroundColor: '#9ca3af',
-      cursor: 'not-allowed'
+      backgroundColor: '#ddd',
+      cursor: 'not-allowed',
+      color: '#666'
     },
     actionButtons: {
       display: 'flex',
       gap: '16px',
       paddingTop: '24px',
-      borderTop: '1px solid #e2e8f0'
+      borderTop: '1px solid #ccc'
     },
     buttonLarge: {
       flex: 1,
@@ -294,41 +296,41 @@ const PDFFormFiller = () => {
       gap: '8px'
     },
     buttonLargePrimary: {
-      backgroundColor: '#2563eb',
-      color: 'white',
+      backgroundColor: '#000',
+      color: '#fff',
       border: 'none'
     },
     buttonLargeSecondary: {
-      backgroundColor: 'white',
-      color: '#374151',
-      border: '1px solid #d1d5db'
+      backgroundColor: '#fff',
+      color: '#000',
+      border: '1px solid #ccc'
     },
     preview: {
       paddingTop: '24px',
-      borderTop: '1px solid #e2e8f0'
+      borderTop: '1px solid #ccc'
     },
     iframe: {
       width: '100%',
       height: '384px',
-      border: '1px solid #e2e8f0',
+      border: '1px solid #ccc',
       borderRadius: '8px'
     },
     infoCard: {
       marginTop: '24px',
-      backgroundColor: '#fffbeb',
-      border: '1px solid #fcd34d',
+      backgroundColor: '#fef2f2', 
+      border: '1px solid #fecaca', 
       borderRadius: '8px',
       padding: '24px'
     },
     infoTitle: {
       fontSize: '18px',
       fontWeight: '500',
-      color: '#92400e',
+      color: '#991b1b',
       margin: '0 0 12px 0'
     },
     infoList: {
       fontSize: '14px',
-      color: '#92400e',
+      color: '#991b1b',
       margin: 0,
       paddingLeft: 0,
       listStyle: 'none'
@@ -725,7 +727,7 @@ const PDFFormFiller = () => {
                         value={formData.tanggalBulan}
                         onChange={(e) => updateFormData('tanggalBulan', e.target.value)}
                         style={styles.dateInput}
-                        placeholder="Month"
+                        placeholder="MM"
                         onFocus={(e) => {
                           e.target.style.borderColor = styles.inputFocus.borderColor;
                           e.target.style.boxShadow = styles.inputFocus.boxShadow;
@@ -776,12 +778,12 @@ const PDFFormFiller = () => {
                   }}
                   onMouseEnter={(e) => {
                     if (attendees.length < 10) {
-                      e.target.style.backgroundColor = '#059669';
+                      e.target.style.backgroundColor = 'black';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (attendees.length < 10) {
-                      e.target.style.backgroundColor = '#10b981';
+                      e.target.style.backgroundColor = 'black';
                     }
                   }}
                 >
@@ -802,10 +804,10 @@ const PDFFormFiller = () => {
                           onClick={() => removeAttendee(index)}
                           style={styles.buttonDanger}
                           onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#fecaca';
+                            e.target.style.backgroundColor = '#f0f0f0';
                           }}
                           onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = '#fee2e2';
+                            e.target.style.backgroundColor = '#f0f0f0';
                           }}
                         >
                           <svg style={{width: '12px', height: '12px', marginRight: '4px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -889,12 +891,12 @@ const PDFFormFiller = () => {
                 }}
                 onMouseEnter={(e) => {
                   if (isFormComplete() && !isProcessing) {
-                    e.target.style.backgroundColor = '#1d4ed8';
+                    e.target.style.backgroundColor = 'black';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (isFormComplete() && !isProcessing) {
-                    e.target.style.backgroundColor = '#2563eb';
+                    e.target.style.backgroundColor = 'black';
                   }
                 }}
               >
