@@ -42,43 +42,83 @@ const PDFFormFiller = () => {
     { nama: { x: 95, y: 438, page: 3 }, instansiUnit: { x: 205, y: 438, page: 3 }, contact: { x: 290, y: 438, page: 3 } }
   ]);
 
+  // Modern styles object
   const styles = {
     container: {
       minHeight: '100vh',
-      background: 'linear-gradient(to bottom right, #dbeafe, #e0e7ff)',
-      padding: '16px',
-      fontFamily: 'system-ui, -apple-system, sans-serif'
+      backgroundColor: '#f8fafc',
+      padding: '32px 16px',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     },
     wrapper: {
-      maxWidth: '1200px',
+      maxWidth: '1024px',
       margin: '0 auto'
     },
-    card: {
+    mainCard: {
       backgroundColor: 'white',
-      borderRadius: '8px',
-      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-      padding: '24px',
-      marginBottom: '24px'
+      borderRadius: '12px',
+      boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+      border: '1px solid #e2e8f0',
+      overflow: 'hidden'
     },
     header: {
+      padding: '24px 32px',
+      borderBottom: '1px solid #e2e8f0',
       display: 'flex',
       alignItems: 'center',
-      gap: '12px',
-      marginBottom: '24px'
+      gap: '12px'
+    },
+    iconContainer: {
+      width: '40px',
+      height: '40px',
+      backgroundColor: '#dbeafe',
+      borderRadius: '8px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
     },
     icon: {
-      width: '32px',
-      height: '32px',
-      color: '#4f46e5'
+      width: '24px',
+      height: '24px',
+      color: '#2563eb'
+    },
+    headerText: {
+      flex: 1
     },
     title: {
       fontSize: '24px',
-      fontWeight: 'bold',
-      color: '#1f2937',
-      margin: 0
+      fontWeight: '600',
+      color: '#111827',
+      margin: 0,
+      lineHeight: '1.2'
+    },
+    subtitle: {
+      fontSize: '14px',
+      color: '#6b7280',
+      margin: '4px 0 0 0'
+    },
+    content: {
+      padding: '32px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '32px'
     },
     section: {
-      marginBottom: '24px'
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px'
+    },
+    sectionCard: {
+      backgroundColor: '#f8fafc',
+      borderRadius: '8px',
+      padding: '24px',
+      border: '1px solid #e2e8f0'
+    },
+    sectionTitle: {
+      fontSize: '18px',
+      fontWeight: '500',
+      color: '#111827',
+      margin: '0 0 16px 0'
     },
     label: {
       display: 'block',
@@ -87,12 +127,38 @@ const PDFFormFiller = () => {
       color: '#374151',
       marginBottom: '8px'
     },
+    input: {
+      width: '100%',
+      padding: '12px 16px',
+      border: '1px solid #d1d5db',
+      borderRadius: '6px',
+      fontSize: '16px',
+      backgroundColor: 'white',
+      transition: 'border-color 0.2s, box-shadow 0.2s',
+      outline: 'none',
+      boxSizing: 'border-box'
+    },
+    inputFocus: {
+      borderColor: '#2563eb',
+      boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.1)'
+    },
+    grid: {
+      display: 'grid',
+      gap: '16px'
+    },
+    gridCols2: {
+      gridTemplateColumns: 'repeat(2, 1fr)'
+    },
+    gridCols3: {
+      gridTemplateColumns: 'repeat(3, 1fr)'
+    },
     uploadArea: {
       border: '2px dashed #d1d5db',
       borderRadius: '8px',
-      padding: '24px',
+      padding: '32px',
       textAlign: 'center',
       cursor: 'pointer',
+      backgroundColor: '#f8fafc',
       transition: 'border-color 0.2s'
     },
     uploadIcon: {
@@ -101,221 +167,183 @@ const PDFFormFiller = () => {
       color: '#9ca3af',
       margin: '0 auto 16px'
     },
-    hiddenInput: {
-      display: 'none'
-    },
     uploadButton: {
-      backgroundColor: '#4f46e5',
-      color: 'white',
+      display: 'inline-flex',
+      alignItems: 'center',
       padding: '8px 16px',
-      borderRadius: '8px',
-      border: 'none',
-      cursor: 'pointer',
-      transition: 'background-color 0.2s',
-      fontSize: '14px'
-    },
-    input: {
-      width: '100%',
-      padding: '8px 16px',
-      border: '1px solid #d1d5db',
-      borderRadius: '8px',
-      fontSize: '16px',
-      outline: 'none',
-      transition: 'border-color 0.2s, box-shadow 0.2s'
-    },
-    smallInput: {
-      width: '100%',
-      padding: '6px 12px',
       border: '1px solid #d1d5db',
       borderRadius: '6px',
-      fontSize: '14px',
-      outline: 'none'
-    },
-    grid: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-      gap: '16px'
-    },
-    gridThree: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr 1fr',
-      gap: '12px'
-    },
-    gridFour: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr 1fr 1fr',
-      gap: '8px'
-    },
-    numberInput: {
-      width: '100%',
-      padding: '6px 8px',
-      border: '1px solid #d1d5db',
-      borderRadius: '4px',
-      fontSize: '12px'
-    },
-    selectInput: {
-      width: '100%',
-      padding: '6px 8px',
-      border: '1px solid #d1d5db',
-      borderRadius: '4px',
-      fontSize: '12px',
-      backgroundColor: 'white'
-    },
-    buttonGroup: {
-      display: 'flex',
-      gap: '16px'
-    },
-    primaryButton: {
-      flex: 1,
-      backgroundColor: '#059669',
-      color: 'white',
-      padding: '12px 24px',
-      borderRadius: '8px',
-      border: 'none',
-      cursor: 'pointer',
-      fontSize: '16px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '8px',
-      transition: 'background-color 0.2s'
-    },
-    secondaryButton: {
-      padding: '12px 24px',
-      border: '1px solid #d1d5db',
       backgroundColor: 'white',
       color: '#374151',
-      borderRadius: '8px',
+      fontSize: '14px',
+      fontWeight: '500',
       cursor: 'pointer',
-      fontSize: '16px',
       transition: 'background-color 0.2s'
     },
-    disabledButton: {
-      backgroundColor: '#9ca3af',
-      cursor: 'not-allowed'
-    },
-    previewSection: {
-      marginTop: '24px'
-    },
-    iframe: {
-      width: '100%',
-      height: '400px',
-      border: '1px solid #e5e7eb',
-      borderRadius: '8px'
-    },
-    infoCard: {
-      backgroundColor: '#fefce8',
-      border: '1px solid #fde047',
-      borderRadius: '8px',
-      padding: '16px'
-    },
-    infoTitle: {
-      fontWeight: '500',
-      color: '#a16207',
-      marginBottom: '8px'
-    },
-    infoList: {
-      fontSize: '14px',
-      color: '#a16207',
-      margin: 0,
-      paddingLeft: '16px'
-    },
-    pageInfo: {
-      backgroundColor: '#f3f4f6',
-      padding: '8px 12px',
-      borderRadius: '6px',
+    uploadInfo: {
       fontSize: '14px',
       color: '#6b7280',
       marginTop: '8px'
     },
-    coordinateGroup: {
-      backgroundColor: '#f9fafb',
-      border: '1px solid #e5e7eb',
-      borderRadius: '8px',
-      padding: '16px',
-      marginBottom: '16px'
+    fileInfo: {
+      marginTop: '16px',
+      padding: '12px',
+      backgroundColor: '#dbeafe',
+      borderRadius: '6px'
     },
-    coordinateTitle: {
+    fileInfoText: {
       fontSize: '14px',
       fontWeight: '500',
-      color: '#1f2937',
-      marginBottom: '12px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px'
+      color: '#1e40af',
+      margin: 0
     },
     dateContainer: {
-      display: 'flex',
-      gap: '8px',
-      alignItems: 'center'
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gap: '12px'
+    },
+    dateInput: {
+      width: '100%',
+      padding: '12px 16px',
+      border: '1px solid #d1d5db',
+      borderRadius: '6px',
+      fontSize: '16px',
+      backgroundColor: 'white',
+      textAlign: 'center',
+      outline: 'none',
+      boxSizing: 'border-box'
     },
     dateLabel: {
       fontSize: '12px',
       color: '#6b7280',
-      textAlign: 'center'
+      textAlign: 'center',
+      marginTop: '4px'
     },
-    attendeeSection: {
-      border: '1px solid #e5e7eb',
+    attendeesHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: '16px'
+    },
+    attendeeCard: {
+      backgroundColor: 'white',
+      border: '1px solid #e2e8f0',
       borderRadius: '8px',
       padding: '16px',
-      marginBottom: '16px',
-      backgroundColor: '#fff'
+      marginBottom: '16px'
     },
     attendeeHeader: {
       display: 'flex',
-      justifyContent: 'space-between',
       alignItems: 'center',
+      justifyContent: 'space-between',
       marginBottom: '16px'
     },
     attendeeTitle: {
-      fontSize: '16px',
+      fontSize: '14px',
       fontWeight: '500',
-      color: '#1f2937',
-      display: 'flex',
+      color: '#111827',
+      margin: 0
+    },
+    buttonPrimary: {
+      display: 'inline-flex',
       alignItems: 'center',
-      gap: '8px'
-    },
-    attendeeControls: {
-      display: 'flex',
-      gap: '8px'
-    },
-    iconButton: {
-      width: '32px',
-      height: '32px',
-      borderRadius: '6px',
+      padding: '8px 12px',
+      backgroundColor: '#10b981',
+      color: 'white',
       border: 'none',
+      borderRadius: '6px',
+      fontSize: '14px',
+      fontWeight: '500',
       cursor: 'pointer',
+      transition: 'background-color 0.2s'
+    },
+    buttonDanger: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      padding: '6px 8px',
+      backgroundColor: '#fee2e2',
+      color: '#dc2626',
+      border: '1px solid #fecaca',
+      borderRadius: '4px',
+      fontSize: '12px',
+      fontWeight: '500',
+      cursor: 'pointer',
+      transition: 'background-color 0.2s'
+    },
+    buttonDisabled: {
+      backgroundColor: '#9ca3af',
+      cursor: 'not-allowed'
+    },
+    actionButtons: {
+      display: 'flex',
+      gap: '16px',
+      paddingTop: '24px',
+      borderTop: '1px solid #e2e8f0'
+    },
+    buttonLarge: {
+      flex: 1,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      fontSize: '18px',
-      fontWeight: 'bold'
-    },
-    addButton: {
-      backgroundColor: '#10b981',
-      color: 'white'
-    },
-    removeButton: {
-      backgroundColor: '#ef4444',
-      color: 'white'
-    },
-    attendeeGrid: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr 1fr',
-      gap: '12px',
-      marginBottom: '16px'
-    },
-    attendeeCoordinateSection: {
-      backgroundColor: '#f8fafc',
-      padding: '12px',
-      borderRadius: '6px',
-      marginTop: '12px'
-    },
-    coordSubtitle: {
-      fontSize: '12px',
+      padding: '12px 24px',
+      fontSize: '16px',
       fontWeight: '500',
-      color: '#64748b',
+      borderRadius: '6px',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      gap: '8px'
+    },
+    buttonLargePrimary: {
+      backgroundColor: '#2563eb',
+      color: 'white',
+      border: 'none'
+    },
+    buttonLargeSecondary: {
+      backgroundColor: 'white',
+      color: '#374151',
+      border: '1px solid #d1d5db'
+    },
+    preview: {
+      paddingTop: '24px',
+      borderTop: '1px solid #e2e8f0'
+    },
+    iframe: {
+      width: '100%',
+      height: '384px',
+      border: '1px solid #e2e8f0',
+      borderRadius: '8px'
+    },
+    infoCard: {
+      marginTop: '24px',
+      backgroundColor: '#fffbeb',
+      border: '1px solid #fcd34d',
+      borderRadius: '8px',
+      padding: '24px'
+    },
+    infoTitle: {
+      fontSize: '18px',
+      fontWeight: '500',
+      color: '#92400e',
+      margin: '0 0 12px 0'
+    },
+    infoList: {
+      fontSize: '14px',
+      color: '#92400e',
+      margin: 0,
+      paddingLeft: 0,
+      listStyle: 'none'
+    },
+    infoItem: {
+      display: 'flex',
+      alignItems: 'flex-start',
       marginBottom: '8px'
+    },
+    bullet: {
+      fontWeight: '500',
+      marginRight: '8px'
+    },
+    hiddenInput: {
+      display: 'none'
     }
   };
 
@@ -410,7 +438,6 @@ const PDFFormFiller = () => {
       const pdfDoc = await PDFDocument.load(arrayBuffer);
       const pages = pdfDoc.getPages();
       
-      // Validate basic coordinates
       for (const [field, coord] of Object.entries(basicCoordinates)) {
         const pageIndex = coord.page - 1;
         if (pageIndex >= pages.length || pageIndex < 0) {
@@ -420,7 +447,6 @@ const PDFFormFiller = () => {
         }
       }
       
-      // Add basic form data to PDF
       Object.entries(formData).forEach(([field, value]) => {
         if (value.trim()) {
           const coord = basicCoordinates[field];
@@ -435,12 +461,10 @@ const PDFFormFiller = () => {
         }
       });
       
-      // Add attendee data to PDF
       attendees.forEach((attendee, index) => {
         if (index < attendeeCoordinates.length) {
           const coords = attendeeCoordinates[index];
           
-          // Add nama
           if (attendee.nama.trim()) {
             const page = pages[coords.nama.page - 1];
             page.drawText(attendee.nama, {
@@ -451,7 +475,6 @@ const PDFFormFiller = () => {
             });
           }
           
-          // Add instansi unit
           if (attendee.instansiUnit.trim()) {
             const page = pages[coords.instansiUnit.page - 1];
             page.drawText(attendee.instansiUnit, {
@@ -462,7 +485,6 @@ const PDFFormFiller = () => {
             });
           }
           
-          // Add contact
           if (attendee.contact.trim()) {
             const page = pages[coords.contact.page - 1];
             page.drawText(attendee.contact, {
@@ -531,52 +553,6 @@ const PDFFormFiller = () => {
     return options;
   };
 
-  const BasicCoordinateControl = ({ field, label, emoji }) => (
-    <div style={styles.coordinateGroup}>
-      <div style={styles.coordinateTitle}>
-        <span>{emoji}</span>
-        {label}
-      </div>
-      <div style={styles.gridFour}>
-        <div>
-          <label style={styles.label}>Halaman</label>
-          <select
-            value={basicCoordinates[field].page}
-            onChange={(e) => updateBasicCoordinates(field, 'page', e.target.value)}
-            style={styles.selectInput}
-            disabled={totalPages === 0}
-          >
-            {totalPages > 0 ? generatePageOptions() : <option>Upload PDF</option>}
-          </select>
-        </div>
-        <div>
-          <label style={styles.label}>X</label>
-          <input
-            type="number"
-            value={basicCoordinates[field].x}
-            onChange={(e) => updateBasicCoordinates(field, 'x', e.target.value)}
-            style={styles.numberInput}
-          />
-        </div>
-        <div>
-          <label style={styles.label}>Y</label>
-          <input
-            type="number"
-            value={basicCoordinates[field].y}
-            onChange={(e) => updateBasicCoordinates(field, 'y', e.target.value)}
-            style={styles.numberInput}
-          />
-        </div>
-        <div>
-          <label style={styles.label}>Preview</label>
-          <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
-            ({basicCoordinates[field].x}, {basicCoordinates[field].y})
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   const isFormComplete = () => {
     const basicComplete = Object.values(formData).every(val => val.trim());
     const attendeesComplete = attendees.every(attendee => 
@@ -588,446 +564,417 @@ const PDFFormFiller = () => {
   return (
     <div style={styles.container}>
       <div style={styles.wrapper}>
-        <div style={styles.card}>
+        {/* Main Card */}
+        <div style={styles.mainCard}>
+          {/* Header */}
           <div style={styles.header}>
-            <svg style={styles.icon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <h1 style={styles.title}>PDF Form Filler - Multiple Attendees</h1>
-          </div>
-          
-          {/* Upload Section */}
-          <div style={styles.section}>
-            <label style={styles.label}>Upload PDF Template</label>
-            <div style={styles.uploadArea} onClick={() => fileInputRef.current?.click()}>
-              <svg style={styles.uploadIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            <div style={styles.iconContainer}>
+              <svg style={styles.icon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf"
-                onChange={handleFileUpload}
-                style={styles.hiddenInput}
-              />
-              <button style={styles.uploadButton}>Choose PDF File</button>
-              {pdfFile && (
-                <div>
-                  <p style={{ marginTop: '8px', fontSize: '14px', color: '#6b7280' }}>
-                    Selected: {pdfFile.name}
-                  </p>
-                  {totalPages > 0 && (
-                    <div style={styles.pageInfo}>
-                      📄 Total halaman: {totalPages}
-                    </div>
-                  )}
-                </div>
-              )}
+            </div>
+            <div style={styles.headerText}>
+              <h1 style={styles.title}>PDF Form Filler</h1>
+              <p style={styles.subtitle}>Fill and generate PDF forms with multiple attendees</p>
             </div>
           </div>
 
-          {/* Basic Form Section */}
-          <div style={styles.section}>
-            <h3 style={{fontSize: '18px', fontWeight: '500', marginBottom: '16px', color: '#1f2937'}}>Profil Nasabah</h3>
-            
-            <div style={{marginBottom: '16px'}}>
-              <label style={styles.label}>Nama Nasabah Company ID</label>
-              <input
-                type="text"
-                value={formData.namaNasabah}
-                onChange={(e) => updateFormData('namaNasabah', e.target.value)}
-                style={styles.input}
-              />
-            </div>
-
-            <div style={{marginBottom: '16px'}}>
-              <label style={styles.label}>Alamat</label>
-              <input
-                type="text"
-                value={formData.alamat}
-                onChange={(e) => updateFormData('alamat', e.target.value)}
-                style={styles.input}
-              />
-            </div>
-            
-            <h3 style={{fontSize: '18px', fontWeight: '500', marginBottom: '16px', color: '#1f2937'}}>Profil Implementasi</h3>
-
-            <div style={{marginBottom: '16px'}}>
-              <label style={styles.label}>Nama Implementor</label>
-              <input
-                type="text"
-                value={formData.namaImplementor}
-                onChange={(e) => updateFormData('namaImplementor', e.target.value)}
-                style={styles.input}
-              />
-            </div>
-
-            <div style={{marginBottom: '16px'}}>
-              <label style={styles.label}>Tanggal Implementasi</label>
-              <div style={styles.dateContainer}>
-                <div style={{flex: 1}}>
-                  <input
-                    type="text"
-                    value={formData.tanggalHari}
-                    onChange={(e) => updateFormData('tanggalHari', e.target.value)}
-                    maxLength="2"
-                    style={styles.smallInput}
-                  />
-                  <div style={styles.dateLabel}>Hari</div>
+          <div style={styles.content}>
+            {/* Upload Section */}
+            <div style={styles.section}>
+              <label style={styles.label}>Upload PDF Template</label>
+              <div 
+                style={styles.uploadArea}
+                onClick={() => fileInputRef.current?.click()}
+                onMouseEnter={(e) => {
+                  e.target.style.borderColor = '#9ca3af';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.borderColor = '#d1d5db';
+                }}
+              >
+                <svg style={styles.uploadIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileUpload}
+                  style={styles.hiddenInput}
+                />
+                <div>
+                  <button 
+                    style={styles.uploadButton}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = '#f3f4f6';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = 'white';
+                    }}
+                  >
+                    Choose PDF File
+                  </button>
+                  <p style={styles.uploadInfo}>or drag and drop</p>
                 </div>
-                <div style={{flex: 1}}>
+                {pdfFile && (
+                  <div style={styles.fileInfo}>
+                    <p style={styles.fileInfoText}>
+                      📁 {pdfFile.name}
+                    </p>
+                    {totalPages > 0 && (
+                      <p style={{...styles.fileInfoText, marginTop: '4px'}}>
+                        📄 Total pages: {totalPages}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Customer Profile */}
+            <div style={styles.sectionCard}>
+              <h3 style={styles.sectionTitle}>Customer Profile</h3>
+              <div style={{...styles.grid, ...styles.gridCols2}}>
+                <div>
+                  <label style={styles.label}>Customer Name</label>
                   <input
                     type="text"
-                    value={formData.tanggalBulan}
-                    onChange={(e) => updateFormData('tanggalBulan', e.target.value)}
-                    style={styles.smallInput}
+                    value={formData.namaNasabah}
+                    onChange={(e) => updateFormData('namaNasabah', e.target.value)}
+                    style={styles.input}
+                    placeholder="Enter customer name"
+                    onFocus={(e) => {
+                      e.target.style.borderColor = styles.inputFocus.borderColor;
+                      e.target.style.boxShadow = styles.inputFocus.boxShadow;
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
-                  <div style={styles.dateLabel}>Bulan</div>
                 </div>
-                <div style={{flex: 1}}>
+                <div>
+                  <label style={styles.label}>Address</label>
                   <input
                     type="text"
-                    value={formData.tanggalTahun}
-                    onChange={(e) => updateFormData('tanggalTahun', e.target.value)}
-                    maxLength="4"
-                    style={styles.smallInput}
+                    value={formData.alamat}
+                    onChange={(e) => updateFormData('alamat', e.target.value)}
+                    style={styles.input}
+                    placeholder="Enter address"
+                    onFocus={(e) => {
+                      e.target.style.borderColor = styles.inputFocus.borderColor;
+                      e.target.style.boxShadow = styles.inputFocus.boxShadow;
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
-                  <div style={styles.dateLabel}>Tahun</div>
                 </div>
               </div>
             </div>
-          </div>
-            
-          {/* Attendees Section */}
-          <div style={styles.section}>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
-              <h3 style={{fontSize: '18px', fontWeight: '500', color: '#1f2937', margin: 0}}>
-                Informasi Kehadiran ({attendees.length}/10)
-              </h3>
+
+            {/* Implementation Profile */}
+            <div style={styles.sectionCard}>
+              <h3 style={styles.sectionTitle}>Implementation Profile</h3>
+              <div style={styles.section}>
+                <div>
+                  <label style={styles.label}>Implementor Name</label>
+                  <input
+                    type="text"
+                    value={formData.namaImplementor}
+                    onChange={(e) => updateFormData('namaImplementor', e.target.value)}
+                    style={styles.input}
+                    placeholder="Enter implementor name"
+                    onFocus={(e) => {
+                      e.target.style.borderColor = styles.inputFocus.borderColor;
+                      e.target.style.boxShadow = styles.inputFocus.boxShadow;
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={styles.label}>Implementation Date</label>
+                  <div style={styles.dateContainer}>
+                    <div>
+                      <input
+                        type="text"
+                        value={formData.tanggalHari}
+                        onChange={(e) => updateFormData('tanggalHari', e.target.value)}
+                        maxLength="2"
+                        style={styles.dateInput}
+                        placeholder="DD"
+                        onFocus={(e) => {
+                          e.target.style.borderColor = styles.inputFocus.borderColor;
+                          e.target.style.boxShadow = styles.inputFocus.boxShadow;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
+                      />
+                      <p style={styles.dateLabel}>Day</p>
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        value={formData.tanggalBulan}
+                        onChange={(e) => updateFormData('tanggalBulan', e.target.value)}
+                        style={styles.dateInput}
+                        placeholder="Month"
+                        onFocus={(e) => {
+                          e.target.style.borderColor = styles.inputFocus.borderColor;
+                          e.target.style.boxShadow = styles.inputFocus.boxShadow;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
+                      />
+                      <p style={styles.dateLabel}>Month</p>
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        value={formData.tanggalTahun}
+                        onChange={(e) => updateFormData('tanggalTahun', e.target.value)}
+                        maxLength="4"
+                        style={styles.dateInput}
+                        placeholder="YYYY"
+                        onFocus={(e) => {
+                          e.target.style.borderColor = styles.inputFocus.borderColor;
+                          e.target.style.boxShadow = styles.inputFocus.boxShadow;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
+                      />
+                      <p style={styles.dateLabel}>Year</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Attendees Section */}
+            <div style={styles.sectionCard}>
+              <div style={styles.attendeesHeader}>
+                <h3 style={styles.sectionTitle}>
+                  Attendees Information ({attendees.length}/10)
+                </h3>
+                <button
+                  onClick={addAttendee}
+                  disabled={attendees.length >= 10}
+                  style={{
+                    ...styles.buttonPrimary,
+                    ...(attendees.length >= 10 ? styles.buttonDisabled : {})
+                  }}
+                  onMouseEnter={(e) => {
+                    if (attendees.length < 10) {
+                      e.target.style.backgroundColor = '#059669';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (attendees.length < 10) {
+                      e.target.style.backgroundColor = '#10b981';
+                    }
+                  }}
+                >
+                  <svg style={{width: '16px', height: '16px', marginRight: '4px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Add Attendee
+                </button>
+              </div>
+
+              <div style={styles.section}>
+                {attendees.map((attendee, index) => (
+                  <div key={index} style={styles.attendeeCard}>
+                    <div style={styles.attendeeHeader}>
+                      <h4 style={styles.attendeeTitle}>Attendee {index + 1}</h4>
+                      {attendees.length > 1 && (
+                        <button
+                          onClick={() => removeAttendee(index)}
+                          style={styles.buttonDanger}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#fecaca';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = '#fee2e2';
+                          }}
+                        >
+                          <svg style={{width: '12px', height: '12px', marginRight: '4px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Remove
+                        </button>
+                      )}
+                    </div>
+
+                    <div style={{...styles.grid, ...styles.gridCols3}}>
+                      <div>
+                        <label style={styles.label}>Name</label>
+                        <input
+                          type="text"
+                          value={attendee.nama}
+                          onChange={(e) => updateAttendee(index, 'nama', e.target.value)}
+                          style={styles.input}
+                          placeholder="Enter name"
+                          onFocus={(e) => {
+                            e.target.style.borderColor = styles.inputFocus.borderColor;
+                            e.target.style.boxShadow = styles.inputFocus.boxShadow;
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={styles.label}>Institution/Unit</label>
+                        <input
+                          type="text"
+                          value={attendee.instansiUnit}
+                          onChange={(e) => updateAttendee(index, 'instansiUnit', e.target.value)}
+                          style={styles.input}
+                          placeholder="Enter institution"
+                          onFocus={(e) => {
+                            e.target.style.borderColor = styles.inputFocus.borderColor;
+                            e.target.style.boxShadow = styles.inputFocus.boxShadow;
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={styles.label}>Contact</label>
+                        <input
+                          type="text"
+                          value={attendee.contact}
+                          onChange={(e) => updateAttendee(index, 'contact', e.target.value)}
+                          style={styles.input}
+                          placeholder="Enter contact"
+                          onFocus={(e) => {
+                            e.target.style.borderColor = styles.inputFocus.borderColor;
+                            e.target.style.boxShadow = styles.inputFocus.boxShadow;
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={styles.actionButtons}>
               <button
-                onClick={addAttendee}
-                disabled={attendees.length >= 10}
+                onClick={handleGeneratePDF}
+                disabled={!isFormComplete() || isProcessing}
                 style={{
-                  ...styles.iconButton,
-                  ...styles.addButton,
-                  ...(attendees.length >= 10 ? styles.disabledButton : {})
+                  ...styles.buttonLarge,
+                  ...styles.buttonLargePrimary,
+                  ...(!isFormComplete() || isProcessing ? styles.buttonDisabled : {})
                 }}
-                title="Tambah Peserta"
+                onMouseEnter={(e) => {
+                  if (isFormComplete() && !isProcessing) {
+                    e.target.style.backgroundColor = '#1d4ed8';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (isFormComplete() && !isProcessing) {
+                    e.target.style.backgroundColor = '#2563eb';
+                  }
+                }}
               >
-                +
+                <svg style={{width: '20px', height: '20px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                {isProcessing ? 'Processing...' : 'Generate & Download PDF'}
+              </button>
+              
+              <button 
+                onClick={resetForm} 
+                style={{
+                  ...styles.buttonLarge,
+                  ...styles.buttonLargeSecondary
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#f3f4f6';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'white';
+                }}
+              >
+                Reset
               </button>
             </div>
 
-            {attendees.map((attendee, index) => (
-              <div key={index} style={styles.attendeeSection}>
-                <div style={styles.attendeeHeader}>
-                  <div style={styles.attendeeTitle}>
-                    Peserta {index + 1}
-                  </div>
-                  <div style={styles.attendeeControls}>
-                    {attendees.length > 1 && (
-                      <button
-                        onClick={() => removeAttendee(index)}
-                        style={{...styles.iconButton, ...styles.removeButton}}
-                        title="Hapus Peserta"
-                      >
-                        -
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Fixed: 3 input fields for each attendee */}
-                <div style={styles.attendeeGrid}>
-                  <div>
-                    <label style={styles.label}>Nama</label>
-                    <input
-                      type="text"
-                      value={attendee.nama}
-                      onChange={(e) => updateAttendee(index, 'nama', e.target.value)}
-                      style={styles.input}
-                    />
-                  </div>
-                  <div>
-                    <label style={styles.label}>Instansi/Unit</label>
-                    <input
-                      type="text"
-                      value={attendee.instansiUnit}
-                      onChange={(e) => updateAttendee(index, 'instansiUnit', e.target.value)}
-                      style={styles.input}
-                    />
-                  </div>
-                  <div>
-                    <label style={styles.label}>Contact</label>
-                    <input
-                      type="text"
-                      value={attendee.contact}
-                      onChange={(e) => updateAttendee(index, 'contact', e.target.value)}
-                      style={styles.input}
-                    />
-                  </div>
-                </div>
-
-                {/* Coordinate controls for this attendee */}
-                <div style={styles.attendeeCoordinateSection}>
-                  <div style={styles.coordSubtitle}>
-                    Koordinat Baris {index + 1} (Nama - Instansi - Contact)
-                  </div>
-                  <div style={styles.gridThree}>
-                    {/* Nama coordinates */}
-                    <div>
-                      <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#4338ca'}}>Nama</div>
-                      <div style={styles.gridFour}>
-                        <select
-                          value={attendeeCoordinates[index]?.nama.page || 1}
-                          onChange={(e) => updateAttendeeCoordinates(index, 'nama', 'page', e.target.value)}
-                          style={styles.selectInput}
-                          disabled={totalPages === 0}
-                        >
-                          {totalPages > 0 ? generatePageOptions() : <option>Upload PDF</option>}
-                        </select>
-                        <input
-                          type="number"
-                          value={attendeeCoordinates[index]?.nama.x || 150}
-                          onChange={(e) => updateAttendeeCoordinates(index, 'nama', 'x', e.target.value)}
-                          style={styles.numberInput}
-                          placeholder="X"
-                        />
-                        <input
-                          type="number"
-                          value={attendeeCoordinates[index]?.nama.y || 580}
-                          onChange={(e) => updateAttendeeCoordinates(index, 'nama', 'y', e.target.value)}
-                          style={styles.numberInput}
-                          placeholder="Y"
-                        />
-                        <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
-                          ({attendeeCoordinates[index]?.nama.x || 150}, {attendeeCoordinates[index]?.nama.y || 580})
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Instansi coordinates */}
-                    <div>
-                      <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#059669'}}>Instansi</div>
-                      <div style={styles.gridFour}>
-                        <select
-                          value={attendeeCoordinates[index]?.instansiUnit.page || 1}
-                          onChange={(e) => updateAttendeeCoordinates(index, 'instansiUnit', 'page', e.target.value)}
-                          style={styles.selectInput}
-                          disabled={totalPages === 0}
-                        >
-                          {totalPages > 0 ? generatePageOptions() : <option>Upload PDF</option>}
-                        </select>
-                        <input
-                          type="number"
-                          value={attendeeCoordinates[index]?.instansiUnit.x || 250}
-                          onChange={(e) => updateAttendeeCoordinates(index, 'instansiUnit', 'x', e.target.value)}
-                          style={styles.numberInput}
-                          placeholder="X"
-                        />
-                        <input
-                          type="number"
-                          value={attendeeCoordinates[index]?.instansiUnit.y || 580}
-                          onChange={(e) => updateAttendeeCoordinates(index, 'instansiUnit', 'y', e.target.value)}
-                          style={styles.numberInput}
-                          placeholder="Y"
-                        />
-                        <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
-                          ({attendeeCoordinates[index]?.instansiUnit.x || 250}, {attendeeCoordinates[index]?.instansiUnit.y || 580})
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Contact coordinates */}
-                    <div>
-                      <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#dc2626'}}>Contact</div>
-                      <div style={styles.gridFour}>
-                        <select
-                          value={attendeeCoordinates[index]?.contact.page || 1}
-                          onChange={(e) => updateAttendeeCoordinates(index, 'contact', 'page', e.target.value)}
-                          style={styles.selectInput}
-                          disabled={totalPages === 0}
-                        >
-                          {totalPages > 0 ? generatePageOptions() : <option>Upload PDF</option>}
-                        </select>
-                        <input
-                          type="number"
-                          value={attendeeCoordinates[index]?.contact.x || 400}
-                          onChange={(e) => updateAttendeeCoordinates(index, 'contact', 'x', e.target.value)}
-                          style={styles.numberInput}
-                          placeholder="X"
-                        />
-                        <input
-                          type="number"
-                          value={attendeeCoordinates[index]?.contact.y || 580}
-                          onChange={(e) => updateAttendeeCoordinates(index, 'contact', 'y', e.target.value)}
-                          style={styles.numberInput}
-                          placeholder="Y"
-                        />
-                        <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
-                          ({attendeeCoordinates[index]?.contact.x || 400}, {attendeeCoordinates[index]?.contact.y || 580})
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            {/* PDF Preview */}
+            {pdfUrl && (
+              <div style={styles.preview}>
+                <h3 style={styles.sectionTitle}>PDF Preview</h3>
+                <iframe 
+                  src={pdfUrl} 
+                  style={styles.iframe}
+                  title="PDF Preview" 
+                />
               </div>
-            ))}
+            )}
           </div>
-
-          {/* Basic Coordinate Controls */}
-          <div style={styles.section}>
-            <h3 style={{fontSize: '18px', fontWeight: '500', marginBottom: '16px', color: '#1f2937'}}>Koordinat Posisi Field Dasar</h3>
-            
-            <BasicCoordinateControl field="namaNasabah" label="Nama Nasabah" emoji="👤" />
-            <BasicCoordinateControl field="alamat" label="Alamat" emoji="🏠" />
-            <BasicCoordinateControl field="namaImplementor" label="Nama Implementor" emoji="⚡" />
-            
-            <div style={styles.coordinateGroup}>
-              <div style={styles.coordinateTitle}>
-                <span>📅</span>
-                Tanggal Implementasi (3 Box Terpisah)
-              </div>
-              <div style={styles.gridThree}>
-                <div>
-                  <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#4338ca'}}>Hari</div>
-                  <div style={styles.gridFour}>
-                    <select
-                      value={basicCoordinates.tanggalHari.page}
-                      onChange={(e) => updateBasicCoordinates('tanggalHari', 'page', e.target.value)}
-                      style={styles.selectInput}
-                      disabled={totalPages === 0}
-                    >
-                      {totalPages > 0 ? generatePageOptions() : <option>Upload PDF</option>}
-                    </select>
-                    <input
-                      type="number"
-                      value={basicCoordinates.tanggalHari.x}
-                      onChange={(e) => updateBasicCoordinates('tanggalHari', 'x', e.target.value)}
-                      style={styles.numberInput}
-                      placeholder="X"
-                    />
-                    <input
-                      type="number"
-                      value={basicCoordinates.tanggalHari.y}
-                      onChange={(e) => updateBasicCoordinates('tanggalHari', 'y', e.target.value)}
-                      style={styles.numberInput}
-                      placeholder="Y"
-                    />
-                    <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
-                      ({basicCoordinates.tanggalHari.x}, {basicCoordinates.tanggalHari.y})
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#059669'}}>Bulan</div>
-                  <div style={styles.gridFour}>
-                    <select
-                      value={basicCoordinates.tanggalBulan.page}
-                      onChange={(e) => updateBasicCoordinates('tanggalBulan', 'page', e.target.value)}
-                      style={styles.selectInput}
-                      disabled={totalPages === 0}
-                    >
-                      {totalPages > 0 ? generatePageOptions() : <option>Upload PDF</option>}
-                    </select>
-                    <input
-                      type="number"
-                      value={basicCoordinates.tanggalBulan.x}
-                      onChange={(e) => updateBasicCoordinates('tanggalBulan', 'x', e.target.value)}
-                      style={styles.numberInput}
-                      placeholder="X"
-                    />
-                    <input
-                      type="number"
-                      value={basicCoordinates.tanggalBulan.y}
-                      onChange={(e) => updateBasicCoordinates('tanggalBulan', 'y', e.target.value)}
-                      style={styles.numberInput}
-                      placeholder="Y"
-                    />
-                    <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
-                      ({basicCoordinates.tanggalBulan.x}, {basicCoordinates.tanggalBulan.y})
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#dc2626'}}>Tahun</div>
-                  <div style={styles.gridFour}>
-                    <select
-                      value={basicCoordinates.tanggalTahun.page}
-                      onChange={(e) => updateBasicCoordinates('tanggalTahun', 'page', e.target.value)}
-                      style={styles.selectInput}
-                      disabled={totalPages === 0}
-                    >
-                      {totalPages > 0 ? generatePageOptions() : <option>Upload PDF</option>}
-                    </select>
-                    <input
-                      type="number"
-                      value={basicCoordinates.tanggalTahun.x}
-                      onChange={(e) => updateBasicCoordinates('tanggalTahun', 'x', e.target.value)}
-                      style={styles.numberInput}
-                      placeholder="X"
-                    />
-                    <input
-                      type="number"
-                      value={basicCoordinates.tanggalTahun.y}
-                      onChange={(e) => updateBasicCoordinates('tanggalTahun', 'y', e.target.value)}
-                      style={styles.numberInput}
-                      placeholder="Y"
-                    />
-                    <div style={{...styles.numberInput, backgroundColor: '#f9fafb', border: 'none', fontSize: '10px'}}>
-                      ({basicCoordinates.tanggalTahun.x}, {basicCoordinates.tanggalTahun.y})
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div style={styles.buttonGroup}>
-            <button
-              onClick={handleGeneratePDF}
-              disabled={!isFormComplete() || isProcessing}
-              style={{
-                ...styles.primaryButton,
-                ...(!isFormComplete() || isProcessing ? styles.disabledButton : {})
-              }}
-            >
-              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              {isProcessing ? 'Processing...' : 'Generate & Download PDF'}
-            </button>
-            
-            <button onClick={resetForm} style={styles.secondaryButton}>
-              Reset
-            </button>
-          </div>
-
-          {/* PDF Preview */}
-          {pdfUrl && (
-            <div style={styles.previewSection}>
-              <h3 style={{ fontSize: '18px', fontWeight: '500', color: '#1f2937', marginBottom: '12px' }}>
-                Preview PDF Template
-              </h3>
-              <iframe src={pdfUrl} style={styles.iframe} title="PDF Preview" />
-            </div>
-          )}
         </div>
 
-        {/* Instructions */}
+        {/* Instructions Card */}
         <div style={styles.infoCard}>
-          <h3 style={styles.infoTitle}>Catatan Penting:</h3>
+          <h3 style={styles.infoTitle}>Important Notes</h3>
           <ul style={styles.infoList}>
-            <li><strong>Upload PDF template</strong> - aplikasi akan mendeteksi jumlah halaman</li>
-            <li><strong>Isi semua field dasar</strong> - nama nasabah, alamat, nama implementor, tanggal (3 box)</li>
-            <li><strong>Tambah/hapus peserta</strong> - klik tombol + untuk menambah peserta (maksimal 10), tombol - untuk menghapus</li>
-            <li><strong>Setiap peserta memiliki 3 field</strong> - nama, instansi unit, contact</li>
-            <li><strong>Koordinat terpisah per peserta</strong> - setiap peserta punya koordinat nama, instansi, dan contact sendiri</li>
-            <li><strong>10 baris tersedia</strong> - sesuai dengan format PDF yang memiliki 10 baris untuk kehadiran</li>
-            <li><strong>Koordinat Y</strong> - dimulai dari bawah halaman (semakin tinggi nilai Y, semakin ke atas)</li>
-            <li><strong>Koordinat X</strong> - dimulai dari kiri halaman (semakin tinggi nilai X, semakin ke kanan)</li>
-            <li><strong>Preview koordinat</strong> - ditampilkan di sebelah kanan setiap field untuk memudahkan pengecekan</li>
+            <li style={styles.infoItem}>
+              <span style={styles.bullet}>•</span>
+              <span><strong>Upload PDF template</strong> - The application will automatically detect the number of pages</span>
+            </li>
+            <li style={styles.infoItem}>
+              <span style={styles.bullet}>•</span>
+              <span><strong>Fill all basic fields</strong> - Customer name, address, implementor name, date (3 boxes)</span>
+            </li>
+            <li style={styles.infoItem}>
+              <span style={styles.bullet}>•</span>
+              <span><strong>Add/remove attendees</strong> - Click + button to add attendees (max 10), - button to remove</span>
+            </li>
+            <li style={styles.infoItem}>
+              <span style={styles.bullet}>•</span>
+              <span><strong>Each attendee has 3 fields</strong> - Name, institution/unit, contact</span>
+            </li>
+            <li style={styles.infoItem}>
+              <span style={styles.bullet}>•</span>
+              <span><strong>Separate coordinates per attendee</strong> - Each attendee has their own coordinates for name, institution, and contact</span>
+            </li>
+            <li style={styles.infoItem}>
+              <span style={styles.bullet}>•</span>
+              <span><strong>10 rows available</strong> - According to the PDF format which has 10 rows for attendance</span>
+            </li>
+            <li style={styles.infoItem}>
+              <span style={styles.bullet}>•</span>
+              <span><strong>Y coordinate</strong> - Starts from bottom of page (higher Y value = higher position)</span>
+            </li>
+            <li style={styles.infoItem}>
+              <span style={styles.bullet}>•</span>
+              <span><strong>X coordinate</strong> - Starts from left of page (higher X value = more to the right)</span>
+            </li>
+            <li style={styles.infoItem}>
+              <span style={styles.bullet}>•</span>
+              <span><strong>Coordinate preview</strong> - Displayed next to each field for easy checking</span>
+            </li>
           </ul>
         </div>
       </div>
