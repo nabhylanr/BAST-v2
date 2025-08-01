@@ -509,16 +509,13 @@ const PDFFormFiller = () => {
         const signatureCoord = basicCoordinates.signature;
         const page = pages[signatureCoord.page - 1];
         
-        // Konversi dari PNG ke format yang lebih konsisten
         const canvas = signatureCanvasRef.current;
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
         
-        // Hitung rasio aspek asli dari canvas
         const aspectRatio = canvasWidth / canvasHeight;
         
-        // Tentukan ukuran di PDF dengan mempertahankan aspect ratio
-        const pdfSignatureWidth = 180; // lebar maksimal di PDF
+        const pdfSignatureWidth = 180; 
         const pdfSignatureHeight = pdfSignatureWidth / aspectRatio;
         
         const signatureImage = await pdfDoc.embedPng(signatureData);
