@@ -20,9 +20,24 @@ const PDFFormFiller = () => {
   const [totalPages, setTotalPages] = useState(0);
   const fileInputRef = useRef(null);
   
-  const signatureCanvasRef = useRef(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [signatureData, setSignatureData] = useState(null);
+  // Three signature canvases and states
+  const signatureCanvasRefs = {
+    cabang: useRef(null),
+    implementor: useRef(null),
+    nasabah: useRef(null)
+  };
+  
+  const [isDrawing, setIsDrawing] = useState({
+    cabang: false,
+    implementor: false,
+    nasabah: false
+  });
+  
+  const [signatureData, setSignatureData] = useState({
+    cabang: null,
+    implementor: null,
+    nasabah: null
+  });
 
   const [basicCoordinates, setBasicCoordinates] = useState({
     namaNasabah: { x: 210, y: 700, page: 1 },
@@ -31,7 +46,9 @@ const PDFFormFiller = () => {
     tanggalHari: { x: 210, y: 613, page: 1 },
     tanggalBulan: { x: 355, y: 613, page: 1 },
     tanggalTahun: { x: 470, y: 613, page: 1 },
-    signature: { x: 70, y: 220, page: 1 }
+    signatureCabang: { x: 80, y: 220, page: 1 },
+    signatureImplementor: { x: 260, y: 220, page: 1 },
+    signatureNasabah: { x: 430, y: 220, page: 1 }
   });
 
   const [attendeeCoordinates, setAttendeeCoordinates] = useState([
@@ -382,6 +399,25 @@ const PDFFormFiller = () => {
       borderRadius: '6px',
       border: '1px solid #dedede'
     },
+    signatureRow: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '24px'
+    },
+    signatureCard: {
+      backgroundColor: '#fff',
+      border: '1px solid #dedede',
+      borderRadius: '8px',
+      padding: '20px',
+      width: '100%'
+    },
+    signatureCardTitle: {
+      fontSize: '16px',
+      fontWeight: '600',
+      color: '#000',
+      margin: '0 0 16px 0',
+      textAlign: 'center'
+    },
     '@media (max-width: 768px)': {
       container: {
         padding: '8px'
@@ -404,13 +440,15 @@ const PDFFormFiller = () => {
       },
       gridCols3: {
         gridTemplateColumns: '1fr'
+      },
+      signatureRow: {
+        flexDirection: 'column'
       }
     }
   };
 
-  // Helper function to get coordinates from event (mouse or touch)
-  const getEventCoordinates = useCallback((e) => {
-    const canvas = signatureCanvasRef.current;
+  const getEventCoordinates = useCallback((e, canvasRef) => {
+    const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     
     let clientX, clientY;
@@ -429,22 +467,22 @@ const PDFFormFiller = () => {
     };
   }, []);
 
-  const startDrawingMouse = useCallback((e) => {
+  const startDrawing = useCallback((e, signatureType) => {
     e.preventDefault();
-    setIsDrawing(true);
-    const canvas = signatureCanvasRef.current;
+    setIsDrawing(prev => ({ ...prev, [signatureType]: true }));
+    const canvas = signatureCanvasRefs[signatureType].current;
     const ctx = canvas.getContext('2d');
-    const coords = getEventCoordinates(e);
+    const coords = getEventCoordinates(e, signatureCanvasRefs[signatureType]);
     ctx.beginPath();
     ctx.moveTo(coords.x, coords.y);
   }, [getEventCoordinates]);
 
-  const drawMouse = useCallback((e) => {
+  const draw = useCallback((e, signatureType) => {
     e.preventDefault();
-    if (!isDrawing) return;
-    const canvas = signatureCanvasRef.current;
+    if (!isDrawing[signatureType]) return;
+    const canvas = signatureCanvasRefs[signatureType].current;
     const ctx = canvas.getContext('2d');
-    const coords = getEventCoordinates(e);
+    const coords = getEventCoordinates(e, signatureCanvasRefs[signatureType]);
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.strokeStyle = '#000';
@@ -452,54 +490,27 @@ const PDFFormFiller = () => {
     ctx.stroke();
   }, [isDrawing, getEventCoordinates]);
 
-  const stopDrawingMouse = useCallback((e) => {
+  const stopDrawing = useCallback((e, signatureType) => {
     e.preventDefault();
-    if (isDrawing) {
-      setIsDrawing(false);
-      const canvas = signatureCanvasRef.current;
+    if (isDrawing[signatureType]) {
+      setIsDrawing(prev => ({ ...prev, [signatureType]: false }));
+      const canvas = signatureCanvasRefs[signatureType].current;
       const signatureDataUrl = canvas.toDataURL();
-      setSignatureData(signatureDataUrl);
+      setSignatureData(prev => ({ ...prev, [signatureType]: signatureDataUrl }));
     }
   }, [isDrawing]);
 
-  const startDrawingTouch = useCallback((e) => {
-    e.preventDefault();
-    setIsDrawing(true);
-    const canvas = signatureCanvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const coords = getEventCoordinates(e);
-    ctx.beginPath();
-    ctx.moveTo(coords.x, coords.y);
-  }, [getEventCoordinates]);
-
-  const drawTouch = useCallback((e) => {
-    e.preventDefault();
-    if (!isDrawing) return;
-    const canvas = signatureCanvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const coords = getEventCoordinates(e);
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = '#000';
-    ctx.lineTo(coords.x, coords.y);
-    ctx.stroke();
-  }, [isDrawing, getEventCoordinates]);
-
-  const stopDrawingTouch = useCallback((e) => {
-    e.preventDefault();
-    if (isDrawing) {
-      setIsDrawing(false);
-      const canvas = signatureCanvasRef.current;
-      const signatureDataUrl = canvas.toDataURL();
-      setSignatureData(signatureDataUrl);
-    }
-  }, [isDrawing]);
-
-  const clearSignature = () => {
-    const canvas = signatureCanvasRef.current;
+  const clearSignature = (signatureType) => {
+    const canvas = signatureCanvasRefs[signatureType].current;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    setSignatureData(null);
+    setSignatureData(prev => ({ ...prev, [signatureType]: null }));
+  };
+
+  const clearAllSignatures = () => {
+    Object.keys(signatureCanvasRefs).forEach(type => {
+      clearSignature(type);
+    });
   };
 
   const handleFileUpload = async (event) => {
@@ -594,27 +605,30 @@ const PDFFormFiller = () => {
         }
       });
       
-      if (signatureData) {
-        const signatureCoord = basicCoordinates.signature;
-        const page = pages[signatureCoord.page - 1];
-        
-        const canvas = signatureCanvasRef.current;
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        
-        const aspectRatio = canvasWidth / canvasHeight;
-        
-        const pdfSignatureWidth = 180; 
-        const pdfSignatureHeight = pdfSignatureWidth / aspectRatio;
-        
-        const signatureImage = await pdfDoc.embedPng(signatureData);
-        
-        page.drawImage(signatureImage, {
-          x: signatureCoord.x,
-          y: signatureCoord.y,
-          width: pdfSignatureWidth,
-          height: pdfSignatureHeight,
-        });
+      const signatureTypes = ['cabang', 'implementor', 'nasabah'];
+      for (const signatureType of signatureTypes) {
+        if (signatureData[signatureType]) {
+          const signatureCoord = basicCoordinates[`signature${signatureType.charAt(0).toUpperCase() + signatureType.slice(1)}`];
+          const page = pages[signatureCoord.page - 1];
+          
+          const canvas = signatureCanvasRefs[signatureType].current;
+          const canvasWidth = canvas.width;
+          const canvasHeight = canvas.height;
+          
+          const aspectRatio = canvasWidth / canvasHeight;
+          
+          const pdfSignatureWidth = 120; // Smaller width for 3 signatures
+          const pdfSignatureHeight = pdfSignatureWidth / aspectRatio;
+          
+          const signatureImage = await pdfDoc.embedPng(signatureData[signatureType]);
+          
+          page.drawImage(signatureImage, {
+            x: signatureCoord.x,
+            y: signatureCoord.y,
+            width: pdfSignatureWidth,
+            height: pdfSignatureHeight,
+          });
+        }
       }
       
       attendees.forEach((attendee, index) => {
@@ -691,10 +705,21 @@ const PDFFormFiller = () => {
       tanggalHari: { x: 210, y: 613, page: 1 },
       tanggalBulan: { x: 355, y: 613, page: 1 },
       tanggalTahun: { x: 470, y: 613, page: 1 },
-      signature: { x: 70, y: 220, page: 1 }
+      signatureCabang: { x: 70, y: 220, page: 1 },
+      signatureImplementor: { x: 250, y: 220, page: 1 },
+      signatureNasabah: { x: 430, y: 220, page: 1 }
     });
-    setSignatureData(null);
-    clearSignature();
+    setSignatureData({
+      cabang: null,
+      implementor: null,
+      nasabah: null
+    });
+    setIsDrawing({
+      cabang: false,
+      implementor: false,
+      nasabah: false
+    });
+    clearAllSignatures();
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -708,6 +733,50 @@ const PDFFormFiller = () => {
     return pdfFile && basicComplete && attendeesComplete;
   };
 
+  const renderSignatureCard = (signatureType, title) => (
+    <div key={signatureType} style={styles.signatureCard}>
+      <h4 style={styles.signatureCardTitle}>{title}</h4>
+      <div style={styles.signatureContainer}>
+        <label style={styles.label}>Draw signature:</label>
+        <canvas
+          ref={signatureCanvasRefs[signatureType]}
+          width={800}
+          height={200}
+          style={styles.signatureCanvas}
+          onMouseDown={(e) => startDrawing(e, signatureType)}
+          onMouseMove={(e) => draw(e, signatureType)}
+          onMouseUp={(e) => stopDrawing(e, signatureType)}
+          onMouseLeave={(e) => stopDrawing(e, signatureType)}
+          onTouchStart={(e) => startDrawing(e, signatureType)}
+          onTouchMove={(e) => draw(e, signatureType)}
+          onTouchEnd={(e) => stopDrawing(e, signatureType)}
+          onTouchCancel={(e) => stopDrawing(e, signatureType)}
+        />
+        <div style={styles.signatureButtons}>
+          <button
+            onClick={() => clearSignature(signatureType)}
+            style={styles.buttonDanger}
+          >
+            <svg style={{width: '12px', height: '12px', marginRight: '4px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Clear
+          </button>
+        </div>
+        {signatureData[signatureType] && (
+          <div style={styles.signaturePreview}>
+            <p style={{...styles.label, margin: '0 0 8px 0'}}>Preview:</p>
+            <img 
+              src={signatureData[signatureType]} 
+              alt={`${title} signature preview`} 
+              style={{maxWidth: '200px', height: 'auto', border: '1px solid #dedede', borderRadius: '4px'}} 
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div style={styles.container}>
       <div style={styles.wrapper}>
@@ -720,7 +789,7 @@ const PDFFormFiller = () => {
             </div>
             <div style={styles.headerText}>
               <h1 style={styles.title}>PDF Form Filler</h1>
-              <p style={styles.subtitle}>Fill and generate PDF forms with mobile signature support</p>
+              <p style={styles.subtitle}>Fill and generate PDF forms with triple digital signatures</p>
             </div>
           </div>
 
@@ -853,40 +922,23 @@ const PDFFormFiller = () => {
             </div>
 
             <div style={styles.sectionCard}>
-              <h3 style={styles.sectionTitle}>Digital Signature</h3>
-              <div style={styles.signatureContainer}>
-                <label style={styles.label}>Draw your signature below:</label>
-                <canvas
-                  ref={signatureCanvasRef}
-                  width={800}
-                  height={200}
-                  style={styles.signatureCanvas}
-                  onMouseDown={startDrawingMouse}
-                  onMouseMove={drawMouse}
-                  onMouseUp={stopDrawingMouse}
-                  onMouseLeave={stopDrawingMouse}
-                  onTouchStart={startDrawingTouch}
-                  onTouchMove={drawTouch}
-                  onTouchEnd={stopDrawingTouch}
-                  onTouchCancel={stopDrawingTouch}
-                />
-                <div style={styles.signatureButtons}>
-                  <button
-                    onClick={clearSignature}
-                    style={styles.buttonDanger}
-                  >
-                    <svg style={{width: '12px', height: '12px', marginRight: '4px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Clear Signature
-                  </button>
-                </div>
-                {signatureData && (
-                  <div style={styles.signaturePreview}>
-                    <p style={{...styles.label, margin: '0 0 8px 0'}}>Signature Preview:</p>
-                    <img src={signatureData} alt="Signature preview" style={{maxWidth: '300px', height: 'auto', border: '1px solid #dedede', borderRadius: '4px'}} />
-                  </div>
-                )}
+              <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '8px'}}>
+                <h3 style={styles.sectionTitle}>Digital Signatures</h3>
+                <button
+                  onClick={clearAllSignatures}
+                  style={styles.buttonDanger}
+                >
+                  <svg style={{width: '12px', height: '12px', marginRight: '4px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Clear All Signatures
+                </button>
+              </div>
+              
+              <div style={styles.signatureRow}>
+                {renderSignatureCard('cabang', 'Signature Cabang')}
+                {renderSignatureCard('implementor', 'Signature Implementor')}
+                {renderSignatureCard('nasabah', 'Signature Nasabah')}
               </div>
             </div>
 
@@ -1007,15 +1059,19 @@ const PDFFormFiller = () => {
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
-              <span><strong>Mobile signature support</strong> - Now works on both mobile devices (touch) and desktop (mouse)</span>
+              <span><strong>Triple digital signatures</strong> - Now supports 3 signatures: Cabang, Implementor, and Nasabah</span>
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
-              <span><strong>Draw digital signature</strong> - Use finger/stylus on mobile or mouse on desktop, click "Clear Signature" to redraw</span>
+              <span><strong>Mobile signature support</strong> - Works on both mobile devices (touch) and desktop (mouse)</span>
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
-              <span><strong>Signature aspect ratio preserved</strong> - The signature will maintain its original proportions in the PDF</span>
+              <span><strong>Individual signature controls</strong> - Each signature can be cleared individually, or clear all at once</span>
+            </li>
+            <li style={styles.infoItem}>
+              <span style={styles.bullet}>•</span>
+              <span><strong>Signature positioning</strong> - Signatures are positioned side by side on the PDF with optimal spacing</span>
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
@@ -1027,7 +1083,7 @@ const PDFFormFiller = () => {
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
-              <span><strong>Responsive design</strong> - Interface adapts to mobile screens for better usability</span>
+              <span><strong>Responsive design</strong> - Interface adapts to mobile screens, signatures are stacked vertically</span>
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
