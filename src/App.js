@@ -12,7 +12,7 @@ const PDFFormFiller = () => {
   });
   
   const [attendees, setAttendees] = useState([
-    { nama: '', instansiUnit: '', contact: '' }
+    { nama: '', instansiUnit: '', contact: '', keterangan: '', signature: null }
   ]);
   
   const [pdfUrl, setPdfUrl] = useState(null);
@@ -20,18 +20,21 @@ const PDFFormFiller = () => {
   const [totalPages, setTotalPages] = useState(0);
   const fileInputRef = useRef(null);
   
-  // Three signature canvases and states
   const signatureCanvasRefs = {
     cabang: useRef(null),
     implementor: useRef(null),
     nasabah: useRef(null)
   };
   
+  const attendeeSignatureRefs = useRef([]);
+  
   const [isDrawing, setIsDrawing] = useState({
     cabang: false,
     implementor: false,
     nasabah: false
   });
+  
+  const [isDrawingAttendee, setIsDrawingAttendee] = useState({});
   
   const [signatureData, setSignatureData] = useState({
     cabang: null,
@@ -52,16 +55,76 @@ const PDFFormFiller = () => {
   });
 
   const [attendeeCoordinates, setAttendeeCoordinates] = useState([
-    { nama: { x: 95, y: 690, page: 3 }, instansiUnit: { x: 205, y: 690, page: 3 }, contact: { x: 290, y: 690, page: 3 } },
-    { nama: { x: 95, y: 662, page: 3 }, instansiUnit: { x: 205, y: 662, page: 3 }, contact: { x: 290, y: 662, page: 3 } },
-    { nama: { x: 95, y: 633, page: 3 }, instansiUnit: { x: 205, y: 633, page: 3 }, contact: { x: 290, y: 633, page: 3 } },
-    { nama: { x: 95, y: 604, page: 3 }, instansiUnit: { x: 205, y: 604, page: 3 }, contact: { x: 290, y: 604, page: 3 } },
-    { nama: { x: 95, y: 575, page: 3 }, instansiUnit: { x: 205, y: 575, page: 3 }, contact: { x: 290, y: 575, page: 3 } },
-    { nama: { x: 95, y: 546, page: 3 }, instansiUnit: { x: 205, y: 546, page: 3 }, contact: { x: 290, y: 546, page: 3 } },
-    { nama: { x: 95, y: 517, page: 3 }, instansiUnit: { x: 205, y: 517, page: 3 }, contact: { x: 290, y: 517, page: 3 } },
-    { nama: { x: 95, y: 488, page: 3 }, instansiUnit: { x: 205, y: 488, page: 3 }, contact: { x: 290, y: 488, page: 3 } },
-    { nama: { x: 95, y: 459, page: 3 }, instansiUnit: { x: 205, y: 459, page: 3 }, contact: { x: 290, y: 459, page: 3 } },
-    { nama: { x: 95, y: 430, page: 3 }, instansiUnit: { x: 205, y: 430, page: 3 }, contact: { x: 290, y: 430, page: 3 } }
+    { 
+      nama: { x: 95, y: 690, page: 3 }, 
+      instansiUnit: { x: 205, y: 690, page: 3 }, 
+      contact: { x: 290, y: 690, page: 3 },
+      keterangan: { x: 378, y: 690, page: 3 },
+      signature: { x: 460, y: 690, page: 3 }
+    },
+    { 
+      nama: { x: 95, y: 662, page: 3 }, 
+      instansiUnit: { x: 205, y: 662, page: 3 }, 
+      contact: { x: 290, y: 662, page: 3 },
+      keterangan: { x: 378, y: 662, page: 3 },
+      signature: { x: 460, y: 662, page: 3 }
+    },
+    { 
+      nama: { x: 95, y: 633, page: 3 }, 
+      instansiUnit: { x: 205, y: 633, page: 3 }, 
+      contact: { x: 290, y: 633, page: 3 },
+      keterangan: { x: 378, y: 633, page: 3 },
+      signature: { x: 460, y: 633, page: 3 }
+    },
+    { 
+      nama: { x: 95, y: 604, page: 3 }, 
+      instansiUnit: { x: 205, y: 604, page: 3 }, 
+      contact: { x: 290, y: 604, page: 3 },
+      keterangan: { x: 378, y: 604, page: 3 },
+      signature: { x: 460, y: 604, page: 3 }
+    },
+    { 
+      nama: { x: 95, y: 575, page: 3 }, 
+      instansiUnit: { x: 205, y: 575, page: 3 }, 
+      contact: { x: 290, y: 575, page: 3 },
+      keterangan: { x: 378, y: 575, page: 3 },
+      signature: { x: 460, y: 575, page: 3 }
+    },
+    { 
+      nama: { x: 95, y: 546, page: 3 }, 
+      instansiUnit: { x: 205, y: 546, page: 3 }, 
+      contact: { x: 290, y: 546, page: 3 },
+      keterangan: { x: 378, y: 546, page: 3 },
+      signature: { x: 460, y: 546, page: 3 }
+    },
+    { 
+      nama: { x: 95, y: 517, page: 3 }, 
+      instansiUnit: { x: 205, y: 517, page: 3 }, 
+      contact: { x: 290, y: 517, page: 3 },
+      keterangan: { x: 378, y: 517, page: 3 },
+      signature: { x: 460, y: 517, page: 3 }
+    },
+    { 
+      nama: { x: 95, y: 488, page: 3 }, 
+      instansiUnit: { x: 205, y: 488, page: 3 }, 
+      contact: { x: 290, y: 488, page: 3 },
+      keterangan: { x: 378, y: 488, page: 3 },
+      signature: { x: 460, y: 488, page: 3 }
+    },
+    { 
+      nama: { x: 95, y: 459, page: 3 }, 
+      instansiUnit: { x: 205, y: 459, page: 3 }, 
+      contact: { x: 290, y: 459, page: 3 },
+      keterangan: { x: 378, y: 459, page: 3 },
+      signature: { x: 460, y: 459, page: 3 }
+    },
+    { 
+      nama: { x: 95, y: 430, page: 3 }, 
+      instansiUnit: { x: 205, y: 430, page: 3 }, 
+      contact: { x: 290, y: 430, page: 3 },
+      keterangan: { x: 378, y: 430, page: 3 },
+      signature: { x: 460, y: 430, page: 3 }
+    }
   ]);
 
   const styles = {
@@ -174,6 +237,9 @@ const PDFFormFiller = () => {
     gridCols3: {
       gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))'
     },
+    gridCols5: {
+      gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))'
+    },
     uploadArea: {
       border: '2px dashed #dedede',
       borderRadius: '8px',
@@ -254,7 +320,7 @@ const PDFFormFiller = () => {
       backgroundColor: '#fff',
       border: '1px solid #dedede',
       borderRadius: '8px',
-      padding: '16px',
+      padding: '20px',
       marginBottom: '16px'
     },
     attendeeHeader: {
@@ -264,8 +330,8 @@ const PDFFormFiller = () => {
       marginBottom: '16px'
     },
     attendeeTitle: {
-      fontSize: '14px',
-      fontWeight: '500',
+      fontSize: '16px',
+      fontWeight: '600',
       color: '#000',
       margin: 0
     },
@@ -387,6 +453,16 @@ const PDFFormFiller = () => {
       height: '200px',
       touchAction: 'none' 
     },
+    attendeeSignatureCanvas: {
+      border: '2px solid #dedede',
+      borderRadius: '8px',
+      cursor: 'crosshair',
+      backgroundColor: '#fff',
+      width: '100%',
+      maxWidth: '100%',
+      height: '120px',
+      touchAction: 'none' 
+    },
     signatureButtons: {
       display: 'flex',
       gap: '8px',
@@ -418,6 +494,19 @@ const PDFFormFiller = () => {
       margin: '0 0 16px 0',
       textAlign: 'center'
     },
+    attendeeSignatureSection: {
+      backgroundColor: '#fafafa',
+      border: '1px solid #e0e0e0',
+      borderRadius: '6px',
+      padding: '16px',
+      marginTop: '16px'
+    },
+    attendeeSignatureTitle: {
+      fontSize: '14px',
+      fontWeight: '600',
+      color: '#000',
+      margin: '0 0 12px 0'
+    },
     '@media (max-width: 768px)': {
       container: {
         padding: '8px'
@@ -441,11 +530,27 @@ const PDFFormFiller = () => {
       gridCols3: {
         gridTemplateColumns: '1fr'
       },
+      gridCols5: {
+        gridTemplateColumns: '1fr'
+      },
       signatureRow: {
         flexDirection: 'column'
+      },
+      attendeeGrid: {
+        gridTemplateColumns: '1fr !important'
       }
     }
   };
+
+  const initAttendeeSignatureRefs = useCallback(() => {
+    attendeeSignatureRefs.current = attendees.map((_, index) => 
+      attendeeSignatureRefs.current[index] || React.createRef()
+    );
+  }, [attendees.length]);
+
+  React.useEffect(() => {
+    initAttendeeSignatureRefs();
+  }, [attendees.length, initAttendeeSignatureRefs]);
 
   const getEventCoordinates = useCallback((e, canvasRef) => {
     const canvas = canvasRef.current;
@@ -500,6 +605,41 @@ const PDFFormFiller = () => {
     }
   }, [isDrawing]);
 
+  const startDrawingAttendee = useCallback((e, attendeeIndex) => {
+    e.preventDefault();
+    setIsDrawingAttendee(prev => ({ ...prev, [attendeeIndex]: true }));
+    const canvas = attendeeSignatureRefs.current[attendeeIndex].current;
+    const ctx = canvas.getContext('2d');
+    const coords = getEventCoordinates(e, attendeeSignatureRefs.current[attendeeIndex]);
+    ctx.beginPath();
+    ctx.moveTo(coords.x, coords.y);
+  }, [getEventCoordinates]);
+
+  const drawAttendee = useCallback((e, attendeeIndex) => {
+    e.preventDefault();
+    if (!isDrawingAttendee[attendeeIndex]) return;
+    const canvas = attendeeSignatureRefs.current[attendeeIndex].current;
+    const ctx = canvas.getContext('2d');
+    const coords = getEventCoordinates(e, attendeeSignatureRefs.current[attendeeIndex]);
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#000';
+    ctx.lineTo(coords.x, coords.y);
+    ctx.stroke();
+  }, [isDrawingAttendee, getEventCoordinates]);
+
+  const stopDrawingAttendee = useCallback((e, attendeeIndex) => {
+    e.preventDefault();
+    if (isDrawingAttendee[attendeeIndex]) {
+      setIsDrawingAttendee(prev => ({ ...prev, [attendeeIndex]: false }));
+      const canvas = attendeeSignatureRefs.current[attendeeIndex].current;
+      const signatureDataUrl = canvas.toDataURL();
+      setAttendees(prev => prev.map((attendee, i) => 
+        i === attendeeIndex ? { ...attendee, signature: signatureDataUrl } : attendee
+      ));
+    }
+  }, [isDrawingAttendee]);
+
   const clearSignature = (signatureType) => {
     const canvas = signatureCanvasRefs[signatureType].current;
     const ctx = canvas.getContext('2d');
@@ -507,9 +647,21 @@ const PDFFormFiller = () => {
     setSignatureData(prev => ({ ...prev, [signatureType]: null }));
   };
 
+  const clearAttendeeSignature = (attendeeIndex) => {
+    const canvas = attendeeSignatureRefs.current[attendeeIndex].current;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setAttendees(prev => prev.map((attendee, i) => 
+      i === attendeeIndex ? { ...attendee, signature: null } : attendee
+    ));
+  };
+
   const clearAllSignatures = () => {
     Object.keys(signatureCanvasRefs).forEach(type => {
       clearSignature(type);
+    });
+    attendees.forEach((_, index) => {
+      clearAttendeeSignature(index);
     });
   };
 
@@ -550,13 +702,19 @@ const PDFFormFiller = () => {
 
   const addAttendee = () => {
     if (attendees.length < 10) {
-      setAttendees(prev => [...prev, { nama: '', instansiUnit: '', contact: '' }]);
+      setAttendees(prev => [...prev, { nama: '', instansiUnit: '', contact: '', keterangan: '', signature: null }]);
     }
   };
 
   const removeAttendee = (index) => {
     if (attendees.length > 1) {
       setAttendees(prev => prev.filter((_, i) => i !== index));
+      // Clean up signature drawing state for this attendee
+      setIsDrawingAttendee(prev => {
+        const newState = { ...prev };
+        delete newState[index];
+        return newState;
+      });
     }
   };
 
@@ -565,11 +723,11 @@ const PDFFormFiller = () => {
     const missingBasicFields = basicRequiredFields.filter(field => !formData[field].trim());
     
     const emptyAttendees = attendees.some(attendee => 
-      !attendee.nama.trim() || !attendee.instansiUnit.trim() || !attendee.contact.trim()
+      !attendee.nama.trim() || !attendee.instansiUnit.trim() || !attendee.contact.trim() || !attendee.keterangan.trim()
     );
     
     if (!pdfFile || missingBasicFields.length > 0 || emptyAttendees) {
-      alert('Please upload PDF and fill all required fields including all attendee information');
+      alert('Please upload PDF and fill all required fields including all attendee information (name, institution, contact, and description)');
       return;
     }
 
@@ -617,7 +775,7 @@ const PDFFormFiller = () => {
           
           const aspectRatio = canvasWidth / canvasHeight;
           
-          const pdfSignatureWidth = 120; // Smaller width for 3 signatures
+          const pdfSignatureWidth = 120; 
           const pdfSignatureHeight = pdfSignatureWidth / aspectRatio;
           
           const signatureImage = await pdfDoc.embedPng(signatureData[signatureType]);
@@ -631,7 +789,8 @@ const PDFFormFiller = () => {
         }
       }
       
-      attendees.forEach((attendee, index) => {
+      for (let index = 0; index < attendees.length; index++) {
+        const attendee = attendees[index];
         if (index < attendeeCoordinates.length) {
           const coords = attendeeCoordinates[index];
           
@@ -640,7 +799,7 @@ const PDFFormFiller = () => {
             page.drawText(attendee.nama, {
               x: coords.nama.x,
               y: coords.nama.y,
-              size: 10,
+              size: 9,
               color: rgb(0, 0, 0),
             });
           }
@@ -650,7 +809,7 @@ const PDFFormFiller = () => {
             page.drawText(attendee.instansiUnit, {
               x: coords.instansiUnit.x,
               y: coords.instansiUnit.y,
-              size: 10,
+              size: 9,
               color: rgb(0, 0, 0),
             });
           }
@@ -660,12 +819,44 @@ const PDFFormFiller = () => {
             page.drawText(attendee.contact, {
               x: coords.contact.x,
               y: coords.contact.y,
-              size: 10,
+              size: 9,
               color: rgb(0, 0, 0),
             });
           }
+
+          if (attendee.keterangan.trim()) {
+            const page = pages[coords.keterangan.page - 1];
+            page.drawText(attendee.keterangan, {
+              x: coords.keterangan.x,
+              y: coords.keterangan.y,
+              size: 9,
+              color: rgb(0, 0, 0),
+            });
+          }
+
+          if (attendee.signature) {
+            const page = pages[coords.signature.page - 1];
+            
+            const canvas = attendeeSignatureRefs.current[index].current;
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            
+            const aspectRatio = canvasWidth / canvasHeight;
+            
+            const pdfSignatureWidth = 80; 
+            const pdfSignatureHeight = pdfSignatureWidth / aspectRatio;
+            
+            const signatureImage = await pdfDoc.embedPng(attendee.signature);
+            
+            page.drawImage(signatureImage, {
+              x: coords.signature.x,
+              y: coords.signature.y,
+              width: pdfSignatureWidth,
+              height: pdfSignatureHeight,
+            });
+          }
         }
-      });
+      }
       
       const pdfBytes = await pdfDoc.save();
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
@@ -696,7 +887,7 @@ const PDFFormFiller = () => {
       tanggalBulan: '',
       tanggalTahun: ''
     });
-    setAttendees([{ nama: '', instansiUnit: '', contact: '' }]);
+    setAttendees([{ nama: '', instansiUnit: '', contact: '', keterangan: '', signature: null }]);
     setTotalPages(0);
     setBasicCoordinates({
       namaNasabah: { x: 210, y: 700, page: 1 },
@@ -719,6 +910,7 @@ const PDFFormFiller = () => {
       implementor: false,
       nasabah: false
     });
+    setIsDrawingAttendee({});
     clearAllSignatures();
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -728,7 +920,7 @@ const PDFFormFiller = () => {
   const isFormComplete = () => {
     const basicComplete = Object.values(formData).every(val => val.trim());
     const attendeesComplete = attendees.every(attendee => 
-      attendee.nama.trim() && attendee.instansiUnit.trim() && attendee.contact.trim()
+      attendee.nama.trim() && attendee.instansiUnit.trim() && attendee.contact.trim() && attendee.keterangan.trim()
     );
     return pdfFile && basicComplete && attendeesComplete;
   };
@@ -777,6 +969,56 @@ const PDFFormFiller = () => {
     </div>
   );
 
+  const renderAttendeeSignatureSection = (attendeeIndex) => {
+    if (!attendeeSignatureRefs.current[attendeeIndex]) {
+      attendeeSignatureRefs.current[attendeeIndex] = React.createRef();
+    }
+    
+    return (
+      <div style={styles.attendeeSignatureSection}>
+        <h5 style={styles.attendeeSignatureTitle}>Digital Signature</h5>
+        <div style={styles.signatureContainer}>
+          <label style={styles.label}>Draw your signature:</label>
+          <canvas
+            ref={attendeeSignatureRefs.current[attendeeIndex]}
+            width={600}
+            height={120}
+            style={styles.attendeeSignatureCanvas}
+            onMouseDown={(e) => startDrawingAttendee(e, attendeeIndex)}
+            onMouseMove={(e) => drawAttendee(e, attendeeIndex)}
+            onMouseUp={(e) => stopDrawingAttendee(e, attendeeIndex)}
+            onMouseLeave={(e) => stopDrawingAttendee(e, attendeeIndex)}
+            onTouchStart={(e) => startDrawingAttendee(e, attendeeIndex)}
+            onTouchMove={(e) => drawAttendee(e, attendeeIndex)}
+            onTouchEnd={(e) => stopDrawingAttendee(e, attendeeIndex)}
+            onTouchCancel={(e) => stopDrawingAttendee(e, attendeeIndex)}
+          />
+          <div style={styles.signatureButtons}>
+            <button
+              onClick={() => clearAttendeeSignature(attendeeIndex)}
+              style={styles.buttonDanger}
+            >
+              <svg style={{width: '12px', height: '12px', marginRight: '4px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Clear Signature
+            </button>
+          </div>
+          {attendees[attendeeIndex]?.signature && (
+            <div style={styles.signaturePreview}>
+              <p style={{...styles.label, margin: '0 0 8px 0'}}>Signature Preview:</p>
+              <img 
+                src={attendees[attendeeIndex].signature} 
+                alt={`Attendee ${attendeeIndex + 1} signature preview`} 
+                style={{maxWidth: '150px', height: 'auto', border: '1px solid #dedede', borderRadius: '4px'}} 
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.wrapper}>
@@ -789,7 +1031,7 @@ const PDFFormFiller = () => {
             </div>
             <div style={styles.headerText}>
               <h1 style={styles.title}>PDF Form Filler</h1>
-              <p style={styles.subtitle}>Fill and generate PDF forms with triple digital signatures</p>
+              <p style={styles.subtitle}>Fill and generate PDF forms with multiple digital signatures</p>
             </div>
           </div>
 
@@ -923,15 +1165,19 @@ const PDFFormFiller = () => {
 
             <div style={styles.sectionCard}>
               <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '8px'}}>
-                <h3 style={styles.sectionTitle}>Digital Signatures</h3>
+                <h3 style={styles.sectionTitle}>Main Digital Signatures</h3>
                 <button
-                  onClick={clearAllSignatures}
+                  onClick={() => {
+                    Object.keys(signatureCanvasRefs).forEach(type => {
+                      clearSignature(type);
+                    });
+                  }}
                   style={styles.buttonDanger}
                 >
                   <svg style={{width: '12px', height: '12px', marginRight: '4px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
-                  Clear All Signatures
+                  Clear Main Signatures
                 </button>
               </div>
               
@@ -980,7 +1226,13 @@ const PDFFormFiller = () => {
                       )}
                     </div>
 
-                    <div style={{...styles.grid, ...styles.gridCols3}}>
+                    <div 
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+                        gap: '16px'
+                      }}
+                    >
                       <div>
                         <label style={styles.label}>Name</label>
                         <input
@@ -1011,7 +1263,19 @@ const PDFFormFiller = () => {
                           placeholder="Enter contact"
                         />
                       </div>
+                      <div>
+                        <label style={styles.label}>Description</label>
+                        <input
+                          type="text"
+                          value={attendee.keterangan}
+                          onChange={(e) => updateAttendee(index, 'keterangan', e.target.value)}
+                          style={styles.input}
+                          placeholder="Enter description"
+                        />
+                      </div>
                     </div>
+
+                    {renderAttendeeSignatureSection(index)}
                   </div>
                 ))}
               </div>
@@ -1047,7 +1311,7 @@ const PDFFormFiller = () => {
         </div>
 
         <div style={styles.infoCard}>
-          <h3 style={styles.infoTitle}>Important Notes</h3>
+          <h3 style={styles.infoTitle}>Important Notes - Enhanced Features</h3>
           <ul style={styles.infoList}>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
@@ -1059,7 +1323,7 @@ const PDFFormFiller = () => {
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
-              <span><strong>Triple digital signatures</strong> - Now supports 3 signatures: Cabang, Implementor, and Nasabah</span>
+              <span><strong>Main digital signatures</strong> - 3 main signatures: Cabang, Implementor, and Nasabah</span>
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
@@ -1067,27 +1331,15 @@ const PDFFormFiller = () => {
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
-              <span><strong>Individual signature controls</strong> - Each signature can be cleared individually, or clear all at once</span>
-            </li>
-            <li style={styles.infoItem}>
-              <span style={styles.bullet}>•</span>
-              <span><strong>Signature positioning</strong> - Signatures are positioned side by side on the PDF with optimal spacing</span>
-            </li>
-            <li style={styles.infoItem}>
-              <span style={styles.bullet}>•</span>
               <span><strong>Add/remove attendees</strong> - Click + button to add attendees (max 10), - button to remove</span>
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
-              <span><strong>Each attendee has 3 fields</strong> - Name, institution/unit, contact</span>
+              <span><strong>Complete attendee validation</strong> - All attendee fields including signature must be filled</span>
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
-              <span><strong>Responsive design</strong> - Interface adapts to mobile screens, signatures are stacked vertically</span>
-            </li>
-            <li style={styles.infoItem}>
-              <span style={styles.bullet}>•</span>
-              <span><strong>10 rows available</strong> - According to the PDF format which has 10 rows for attendance</span>
+              <span><strong>10 attendee slots available</strong> - According to the PDF format which has 10 rows for attendance</span>
             </li>
           </ul>
         </div>
