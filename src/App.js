@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 
 const PDFFormFiller = () => {
   const [pdfFile, setPdfFile] = useState(null);
@@ -51,7 +51,7 @@ const PDFFormFiller = () => {
     container: {
       minHeight: '100vh',
       backgroundColor: '#fafafa',
-      padding: '32px 16px',
+      padding: '16px',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     },
     wrapper: {
@@ -152,10 +152,10 @@ const PDFFormFiller = () => {
       gap: '16px'
     },
     gridCols2: {
-      gridTemplateColumns: 'repeat(2, 1fr)'
+      gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))'
     },
     gridCols3: {
-      gridTemplateColumns: 'repeat(3, 1fr)'
+      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))'
     },
     uploadArea: {
       border: '2px dashed #dedede',
@@ -229,7 +229,9 @@ const PDFFormFiller = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: '16px'
+      marginBottom: '16px',
+      flexWrap: 'wrap',
+      gap: '8px'
     },
     attendeeCard: {
       backgroundColor: '#fff',
@@ -285,10 +287,10 @@ const PDFFormFiller = () => {
       display: 'flex',
       gap: '16px',
       paddingTop: '24px',
-      borderTop: '1px solid #dedede'
+      borderTop: '1px solid #dedede',
+      flexDirection: 'column'
     },
     buttonLarge: {
-      flex: 1,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -298,7 +300,8 @@ const PDFFormFiller = () => {
       borderRadius: '6px',
       cursor: 'pointer',
       transition: 'all 0.2s',
-      gap: '8px'
+      gap: '8px',
+      minHeight: '48px'
     },
     buttonLargePrimary: {
       backgroundColor: '#000',
@@ -361,11 +364,16 @@ const PDFFormFiller = () => {
       border: '2px solid #dedede',
       borderRadius: '8px',
       cursor: 'crosshair',
-      backgroundColor: '#fff'
+      backgroundColor: '#fff',
+      width: '100%',
+      maxWidth: '100%',
+      height: '200px',
+      touchAction: 'none' 
     },
     signatureButtons: {
       display: 'flex',
-      gap: '8px'
+      gap: '8px',
+      flexWrap: 'wrap'
     },
     signaturePreview: {
       marginTop: '12px',
@@ -373,38 +381,119 @@ const PDFFormFiller = () => {
       backgroundColor: '#f9f9f9',
       borderRadius: '6px',
       border: '1px solid #dedede'
+    },
+    '@media (max-width: 768px)': {
+      container: {
+        padding: '8px'
+      },
+      content: {
+        padding: '16px',
+        gap: '24px'
+      },
+      header: {
+        padding: '16px 20px'
+      },
+      sectionCard: {
+        padding: '16px'
+      },
+      actionButtons: {
+        flexDirection: 'column'
+      },
+      gridCols2: {
+        gridTemplateColumns: '1fr'
+      },
+      gridCols3: {
+        gridTemplateColumns: '1fr'
+      }
     }
   };
 
-  const startDrawing = (e) => {
+  // Helper function to get coordinates from event (mouse or touch)
+  const getEventCoordinates = useCallback((e) => {
+    const canvas = signatureCanvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    
+    let clientX, clientY;
+    
+    if (e.touches && e.touches[0]) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  }, []);
+
+  const startDrawingMouse = useCallback((e) => {
+    e.preventDefault();
     setIsDrawing(true);
     const canvas = signatureCanvasRef.current;
-    const rect = canvas.getBoundingClientRect();
     const ctx = canvas.getContext('2d');
+    const coords = getEventCoordinates(e);
     ctx.beginPath();
-    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-  };
+    ctx.moveTo(coords.x, coords.y);
+  }, [getEventCoordinates]);
 
-  const draw = (e) => {
+  const drawMouse = useCallback((e) => {
+    e.preventDefault();
     if (!isDrawing) return;
     const canvas = signatureCanvasRef.current;
-    const rect = canvas.getBoundingClientRect();
     const ctx = canvas.getContext('2d');
+    const coords = getEventCoordinates(e);
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.strokeStyle = '#000';
-    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.lineTo(coords.x, coords.y);
     ctx.stroke();
-  };
+  }, [isDrawing, getEventCoordinates]);
 
-  const stopDrawing = () => {
+  const stopDrawingMouse = useCallback((e) => {
+    e.preventDefault();
     if (isDrawing) {
       setIsDrawing(false);
       const canvas = signatureCanvasRef.current;
       const signatureDataUrl = canvas.toDataURL();
       setSignatureData(signatureDataUrl);
     }
-  };
+  }, [isDrawing]);
+
+  const startDrawingTouch = useCallback((e) => {
+    e.preventDefault();
+    setIsDrawing(true);
+    const canvas = signatureCanvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const coords = getEventCoordinates(e);
+    ctx.beginPath();
+    ctx.moveTo(coords.x, coords.y);
+  }, [getEventCoordinates]);
+
+  const drawTouch = useCallback((e) => {
+    e.preventDefault();
+    if (!isDrawing) return;
+    const canvas = signatureCanvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const coords = getEventCoordinates(e);
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#000';
+    ctx.lineTo(coords.x, coords.y);
+    ctx.stroke();
+  }, [isDrawing, getEventCoordinates]);
+
+  const stopDrawingTouch = useCallback((e) => {
+    e.preventDefault();
+    if (isDrawing) {
+      setIsDrawing(false);
+      const canvas = signatureCanvasRef.current;
+      const signatureDataUrl = canvas.toDataURL();
+      setSignatureData(signatureDataUrl);
+    }
+  }, [isDrawing]);
 
   const clearSignature = () => {
     const canvas = signatureCanvasRef.current;
@@ -596,13 +685,13 @@ const PDFFormFiller = () => {
     setAttendees([{ nama: '', instansiUnit: '', contact: '' }]);
     setTotalPages(0);
     setBasicCoordinates({
-      namaNasabah: { x: 150, y: 700, page: 1 },
-      alamat: { x: 150, y: 670, page: 1 },
-      namaImplementor: { x: 150, y: 640, page: 1 },
-      tanggalHari: { x: 150, y: 610, page: 1 },
-      tanggalBulan: { x: 200, y: 610, page: 1 },
-      tanggalTahun: { x: 280, y: 610, page: 1 },
-      signature: { x: 400, y: 200, page: 1 }
+      namaNasabah: { x: 210, y: 700, page: 1 },
+      alamat: { x: 210, y: 677, page: 1 },
+      namaImplementor: { x: 210, y: 627, page: 1 },
+      tanggalHari: { x: 210, y: 613, page: 1 },
+      tanggalBulan: { x: 355, y: 613, page: 1 },
+      tanggalTahun: { x: 470, y: 613, page: 1 },
+      signature: { x: 70, y: 220, page: 1 }
     });
     setSignatureData(null);
     clearSignature();
@@ -631,7 +720,7 @@ const PDFFormFiller = () => {
             </div>
             <div style={styles.headerText}>
               <h1 style={styles.title}>PDF Form Filler</h1>
-              <p style={styles.subtitle}>Fill and generate PDF forms with multiple attendees</p>
+              <p style={styles.subtitle}>Fill and generate PDF forms with mobile signature support</p>
             </div>
           </div>
 
@@ -772,10 +861,14 @@ const PDFFormFiller = () => {
                   width={800}
                   height={200}
                   style={styles.signatureCanvas}
-                  onMouseDown={startDrawing}
-                  onMouseMove={draw}
-                  onMouseUp={stopDrawing}
-                  onMouseLeave={stopDrawing}
+                  onMouseDown={startDrawingMouse}
+                  onMouseMove={drawMouse}
+                  onMouseUp={stopDrawingMouse}
+                  onMouseLeave={stopDrawingMouse}
+                  onTouchStart={startDrawingTouch}
+                  onTouchMove={drawTouch}
+                  onTouchEnd={stopDrawingTouch}
+                  onTouchCancel={stopDrawingTouch}
                 />
                 <div style={styles.signatureButtons}>
                   <button
@@ -914,7 +1007,11 @@ const PDFFormFiller = () => {
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
-              <span><strong>Draw digital signature</strong> - Use mouse to draw your signature on the canvas, click "Clear Signature" to redraw</span>
+              <span><strong>Mobile signature support</strong> - Now works on both mobile devices (touch) and desktop (mouse)</span>
+            </li>
+            <li style={styles.infoItem}>
+              <span style={styles.bullet}>•</span>
+              <span><strong>Draw digital signature</strong> - Use finger/stylus on mobile or mouse on desktop, click "Clear Signature" to redraw</span>
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
@@ -930,7 +1027,7 @@ const PDFFormFiller = () => {
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
-              <span><strong>Separate coordinates per attendee</strong> - Each attendee has their own coordinates for name, institution, and contact</span>
+              <span><strong>Responsive design</strong> - Interface adapts to mobile screens for better usability</span>
             </li>
             <li style={styles.infoItem}>
               <span style={styles.bullet}>•</span>
