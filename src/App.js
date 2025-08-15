@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 
 const PDFFormFiller = () => {
   const [pdfFile, setPdfFile] = useState(null);
@@ -11,6 +11,39 @@ const PDFFormFiller = () => {
     tanggalTahun: ''
   });
   
+  const [checkboxes, setCheckboxes] = useState({
+    mcm_main: false,
+    mcm_approver_pending: false,
+    mcm_account_info: false,
+    mcm_transfer: false,
+    mcm_mass_upload: false,
+    mcm_payroll: false,
+    mcm_batch_upload: false,
+    mcm_bill_payment_upload: false,
+    mcm_mpn_payment: false,
+    mcm_bill_payment: false,
+    mcm_info_management: false,
+    mcm_transaction_status: false,
+    mcm_cut_off_time: false,
+    mcm_template_format: false,
+    mcm_help_desk: false,
+    mcm_others: false,
+    
+    mcm_sysadmin_main: false,
+    mcm_account_grouping: false,
+    mcm_user_grouping: false,
+    mcm_user_creation: false,
+    mcm_reset_password: false,
+    mcm_unlock_user: false,
+    mcm_user_still_login: false,
+    mcm_authorized_limit: false,
+    mcm_utilities: false,
+    mcm_sysadmin_others: false,
+    
+    approval_sudah: false,
+    approval_belum: false
+  });
+  
   const [attendees, setAttendees] = useState([
     { nama: '', instansiUnit: '', contact: '', keterangan: '', signature: null }
   ]);
@@ -18,6 +51,8 @@ const PDFFormFiller = () => {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
+  const [pdfLibLoaded, setPdfLibLoaded] = useState(false);
+  const [loadingError, setLoadingError] = useState(null);
   const fileInputRef = useRef(null);
   
   const signatureCanvasRefs = {
@@ -54,6 +89,39 @@ const PDFFormFiller = () => {
     signatureNasabah: { x: 430, y: 220, page: 1 }
   });
 
+  const checkboxCoordinates = {
+    mcm_main: { x: 45, y: 470, page: 2 },
+    mcm_approver_pending: { x: 75, y: 445, page: 2 },
+    mcm_account_info: { x: 75, y: 420, page: 2 },
+    mcm_transfer: { x: 75, y: 395, page: 2 },
+    mcm_mass_upload: { x: 75, y: 370, page: 2 },
+    mcm_payroll: { x: 108, y: 350, page: 2 },
+    mcm_batch_upload: { x: 108, y: 330, page: 2 },
+    mcm_bill_payment_upload: { x: 108, y: 310, page: 2 },
+    mcm_mpn_payment: { x: 75, y: 285, page: 2 },
+    mcm_bill_payment: { x: 75, y: 260, page: 2 },
+    mcm_info_management: { x: 75, y: 235, page: 2 },
+    mcm_transaction_status: { x: 108, y: 215, page: 2 },
+    mcm_cut_off_time: { x: 108, y: 195, page: 2 },
+    mcm_template_format: { x: 75, y: 170, page: 2 },
+    mcm_help_desk: { x: 75, y: 145, page: 2 },
+    mcm_others: { x: 75, y: 120, page: 2 },
+    
+    mcm_sysadmin_main: { x: 571, y: 470, page: 2 },
+    mcm_account_grouping: { x: 598, y: 445, page: 2 },
+    mcm_user_grouping: { x: 598, y: 420, page: 2 },
+    mcm_user_creation: { x: 598, y: 395, page: 2 },
+    mcm_reset_password: { x: 598, y: 370, page: 2 },
+    mcm_unlock_user: { x: 598, y: 345, page: 2 },
+    mcm_user_still_login: { x: 598, y: 320, page: 2 },
+    mcm_authorized_limit: { x: 598, y: 295, page: 2 },
+    mcm_utilities: { x: 598, y: 270, page: 2 },
+    mcm_sysadmin_others: { x: 598, y: 245, page: 2 },
+    
+    approval_sudah: { x: 608, y: 190, page: 2 },
+    approval_belum: { x: 608, y: 170, page: 2 }
+  };
+
   const [attendeeCoordinates, setAttendeeCoordinates] = useState([
     { 
       nama: { x: 95, y: 690, page: 3 }, 
@@ -62,70 +130,63 @@ const PDFFormFiller = () => {
       keterangan: { x: 378, y: 690, page: 3 },
       signature: { x: 460, y: 690, page: 3 }
     },
-    { 
-      nama: { x: 95, y: 662, page: 3 }, 
-      instansiUnit: { x: 205, y: 662, page: 3 }, 
-      contact: { x: 290, y: 662, page: 3 },
-      keterangan: { x: 378, y: 662, page: 3 },
-      signature: { x: 460, y: 662, page: 3 }
-    },
-    { 
-      nama: { x: 95, y: 633, page: 3 }, 
-      instansiUnit: { x: 205, y: 633, page: 3 }, 
-      contact: { x: 290, y: 633, page: 3 },
-      keterangan: { x: 378, y: 633, page: 3 },
-      signature: { x: 460, y: 633, page: 3 }
-    },
-    { 
-      nama: { x: 95, y: 604, page: 3 }, 
-      instansiUnit: { x: 205, y: 604, page: 3 }, 
-      contact: { x: 290, y: 604, page: 3 },
-      keterangan: { x: 378, y: 604, page: 3 },
-      signature: { x: 460, y: 604, page: 3 }
-    },
-    { 
-      nama: { x: 95, y: 575, page: 3 }, 
-      instansiUnit: { x: 205, y: 575, page: 3 }, 
-      contact: { x: 290, y: 575, page: 3 },
-      keterangan: { x: 378, y: 575, page: 3 },
-      signature: { x: 460, y: 575, page: 3 }
-    },
-    { 
-      nama: { x: 95, y: 546, page: 3 }, 
-      instansiUnit: { x: 205, y: 546, page: 3 }, 
-      contact: { x: 290, y: 546, page: 3 },
-      keterangan: { x: 378, y: 546, page: 3 },
-      signature: { x: 460, y: 546, page: 3 }
-    },
-    { 
-      nama: { x: 95, y: 517, page: 3 }, 
-      instansiUnit: { x: 205, y: 517, page: 3 }, 
-      contact: { x: 290, y: 517, page: 3 },
-      keterangan: { x: 378, y: 517, page: 3 },
-      signature: { x: 460, y: 517, page: 3 }
-    },
-    { 
-      nama: { x: 95, y: 488, page: 3 }, 
-      instansiUnit: { x: 205, y: 488, page: 3 }, 
-      contact: { x: 290, y: 488, page: 3 },
-      keterangan: { x: 378, y: 488, page: 3 },
-      signature: { x: 460, y: 488, page: 3 }
-    },
-    { 
-      nama: { x: 95, y: 459, page: 3 }, 
-      instansiUnit: { x: 205, y: 459, page: 3 }, 
-      contact: { x: 290, y: 459, page: 3 },
-      keterangan: { x: 378, y: 459, page: 3 },
-      signature: { x: 460, y: 459, page: 3 }
-    },
-    { 
-      nama: { x: 95, y: 430, page: 3 }, 
-      instansiUnit: { x: 205, y: 430, page: 3 }, 
-      contact: { x: 290, y: 430, page: 3 },
-      keterangan: { x: 378, y: 430, page: 3 },
-      signature: { x: 460, y: 430, page: 3 }
-    }
+    { nama: { x: 95, y: 662, page: 3 }, instansiUnit: { x: 205, y: 662, page: 3 }, contact: { x: 290, y: 662, page: 3 }, keterangan: { x: 378, y: 662, page: 3 }, signature: { x: 460, y: 662, page: 3 }},
+    { nama: { x: 95, y: 633, page: 3 }, instansiUnit: { x: 205, y: 633, page: 3 }, contact: { x: 290, y: 633, page: 3 }, keterangan: { x: 378, y: 633, page: 3 }, signature: { x: 460, y: 633, page: 3 }},
+    { nama: { x: 95, y: 604, page: 3 }, instansiUnit: { x: 205, y: 604, page: 3 }, contact: { x: 290, y: 604, page: 3 }, keterangan: { x: 378, y: 604, page: 3 }, signature: { x: 460, y: 604, page: 3 }},
+    { nama: { x: 95, y: 575, page: 3 }, instansiUnit: { x: 205, y: 575, page: 3 }, contact: { x: 290, y: 575, page: 3 }, keterangan: { x: 378, y: 575, page: 3 }, signature: { x: 460, y: 575, page: 3 }},
+    { nama: { x: 95, y: 546, page: 3 }, instansiUnit: { x: 205, y: 546, page: 3 }, contact: { x: 290, y: 546, page: 3 }, keterangan: { x: 378, y: 546, page: 3 }, signature: { x: 460, y: 546, page: 3 }},
+    { nama: { x: 95, y: 517, page: 3 }, instansiUnit: { x: 205, y: 517, page: 3 }, contact: { x: 290, y: 517, page: 3 }, keterangan: { x: 378, y: 517, page: 3 }, signature: { x: 460, y: 517, page: 3 }},
+    { nama: { x: 95, y: 488, page: 3 }, instansiUnit: { x: 205, y: 488, page: 3 }, contact: { x: 290, y: 488, page: 3 }, keterangan: { x: 378, y: 488, page: 3 }, signature: { x: 460, y: 488, page: 3 }},
+    { nama: { x: 95, y: 459, page: 3 }, instansiUnit: { x: 205, y: 459, page: 3 }, contact: { x: 290, y: 459, page: 3 }, keterangan: { x: 378, y: 459, page: 3 }, signature: { x: 460, y: 459, page: 3 }},
+    { nama: { x: 95, y: 430, page: 3 }, instansiUnit: { x: 205, y: 430, page: 3 }, contact: { x: 290, y: 430, page: 3 }, keterangan: { x: 378, y: 430, page: 3 }, signature: { x: 460, y: 430, page: 3 }}
   ]);
+
+  useEffect(() => {
+    const loadPdfLib = async () => {
+      try {
+        setLoadingError(null);
+        
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
+        script.onload = () => {
+          if (window.PDFLib) {
+            setPdfLibLoaded(true);
+            console.log('PDF-lib loaded successfully from CDN');
+          }
+        };
+        script.onerror = () => {
+          console.error('Failed to load PDF-lib from primary CDN');
+          tryAlternateCDN();
+        };
+        document.head.appendChild(script);
+        
+        return () => {
+          document.head.removeChild(script);
+        };
+      } catch (error) {
+        console.error('Error loading PDF-lib:', error);
+        setLoadingError('Failed to load PDF processing library');
+      }
+    };
+
+    const tryAlternateCDN = () => {
+      const script2 = document.createElement('script');
+      script2.src = 'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js';
+      script2.onload = () => {
+        if (window.PDFLib) {
+          setPdfLibLoaded(true);
+          console.log('PDF-lib loaded from alternate CDN');
+        }
+      };
+      script2.onerror = () => {
+        console.error('Failed to load PDF-lib from alternate CDN');
+        setLoadingError('Unable to load PDF processing library. Please check your internet connection.');
+      };
+      document.head.appendChild(script2);
+    };
+
+    loadPdfLib();
+  }, []);
 
   const styles = {
     container: {
@@ -135,7 +196,7 @@ const PDFFormFiller = () => {
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     },
     wrapper: {
-      maxWidth: '1024px',
+      maxWidth: '1200px',
       margin: '0 auto'
     },
     mainCard: {
@@ -151,23 +212,6 @@ const PDFFormFiller = () => {
       display: 'flex',
       alignItems: 'center',
       gap: '12px'
-    },
-    iconContainer: {
-      width: '40px',
-      height: '40px',
-      backgroundColor: '#f0f0f0',
-      borderRadius: '8px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    },
-    icon: {
-      width: '24px',
-      height: '24px',
-      color: '#000'
-    },
-    headerText: {
-      flex: 1
     },
     title: {
       fontSize: '24px',
@@ -187,13 +231,8 @@ const PDFFormFiller = () => {
       flexDirection: 'column',
       gap: '32px'
     },
-    section: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '12px'
-    },
     sectionCard: {
-      backgroundColor: '#ffffffff',
+      backgroundColor: '#fff',
       borderRadius: '8px',
       padding: '24px',
       border: '1px solid #dedede'
@@ -203,6 +242,14 @@ const PDFFormFiller = () => {
       fontWeight: '700',
       color: '#000',
       margin: '0 0 16px 0'
+    },
+    subsectionTitle: {
+      fontSize: '16px',
+      fontWeight: '600',
+      color: '#000',
+      margin: '16px 0 12px 0',
+      paddingLeft: '8px',
+      borderLeft: '3px solid #000'
     },
     label: {
       display: 'block',
@@ -223,9 +270,39 @@ const PDFFormFiller = () => {
       boxSizing: 'border-box',
       color: '#000'
     },
-    inputFocus: {
-      borderColor: '#dedede',
-      boxShadow: '0 0 0 2px rgba(0, 0, 0, 0.1)'
+    checkboxContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px'
+    },
+    checkboxItem: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      padding: '4px 0'
+    },
+    checkboxSubItem: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      padding: '4px 0',
+      marginLeft: '20px'
+    },
+    checkbox: {
+      width: '16px',
+      height: '16px',
+      cursor: 'pointer'
+    },
+    checkboxLabel: {
+      fontSize: '14px',
+      color: '#333',
+      cursor: 'pointer',
+      lineHeight: '1.4'
+    },
+    twoColumnLayout: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: '32px'
     },
     grid: {
       display: 'grid',
@@ -234,11 +311,28 @@ const PDFFormFiller = () => {
     gridCols2: {
       gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))'
     },
-    gridCols3: {
-      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))'
+    dateContainer: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gap: '12px'
     },
-    gridCols5: {
-      gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))'
+    dateInput: {
+      width: '100%',
+      padding: '12px 16px',
+      border: '1px solid #dedede',
+      borderRadius: '6px',
+      fontSize: '14px',
+      backgroundColor: '#fff',
+      textAlign: 'center',
+      outline: 'none',
+      boxSizing: 'border-box',
+      color: '#000'
+    },
+    dateLabel: {
+      fontSize: '12px',
+      color: '#666',
+      textAlign: 'center',
+      marginTop: '4px'
     },
     uploadArea: {
       border: '2px dashed #dedede',
@@ -248,12 +342,6 @@ const PDFFormFiller = () => {
       cursor: 'pointer',
       backgroundColor: '#fafafa',
       transition: 'border-color 0.2s'
-    },
-    uploadIcon: {
-      width: '48px',
-      height: '48px',
-      color: '#888',
-      margin: '0 auto 16px'
     },
     uploadButton: {
       display: 'inline-flex',
@@ -284,29 +372,6 @@ const PDFFormFiller = () => {
       fontWeight: '500',
       color: '#000',
       margin: 0
-    },
-    dateContainer: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(3, 1fr)',
-      gap: '12px'
-    },
-    dateInput: {
-      width: '100%',
-      padding: '12px 16px',
-      border: '1px solid #dedede',
-      borderRadius: '6px',
-      fontSize: '14px',
-      backgroundColor: '#fff',
-      textAlign: 'center',
-      outline: 'none',
-      boxSizing: 'border-box',
-      color: '#000'
-    },
-    dateLabel: {
-      fontSize: '12px',
-      color: '#666',
-      textAlign: 'center',
-      marginTop: '4px'
     },
     attendeesHeader: {
       display: 'flex',
@@ -406,35 +471,6 @@ const PDFFormFiller = () => {
       border: '1px solid #dedede',
       borderRadius: '8px'
     },
-    infoCard: {
-      marginTop: '24px',
-      backgroundColor: '#fef2f2', 
-      border: '1px solid #fecaca', 
-      borderRadius: '8px',
-      padding: '24px'
-    },
-    infoTitle: {
-      fontSize: '18px',
-      fontWeight: '500',
-      color: '#991b1b',
-      margin: '0 0 12px 0'
-    },
-    infoList: {
-      fontSize: '14px',
-      color: '#991b1b',
-      margin: 0,
-      paddingLeft: 0,
-      listStyle: 'none'
-    },
-    infoItem: {
-      display: 'flex',
-      alignItems: 'flex-start',
-      marginBottom: '8px'
-    },
-    bullet: {
-      fontWeight: '500',
-      marginRight: '8px'
-    },
     hiddenInput: {
       display: 'none'
     },
@@ -507,38 +543,21 @@ const PDFFormFiller = () => {
       color: '#000',
       margin: '0 0 12px 0'
     },
-    '@media (max-width: 768px)': {
-      container: {
-        padding: '8px'
-      },
-      content: {
-        padding: '16px',
-        gap: '24px'
-      },
-      header: {
-        padding: '16px 20px'
-      },
-      sectionCard: {
-        padding: '16px'
-      },
-      actionButtons: {
-        flexDirection: 'column'
-      },
-      gridCols2: {
-        gridTemplateColumns: '1fr'
-      },
-      gridCols3: {
-        gridTemplateColumns: '1fr'
-      },
-      gridCols5: {
-        gridTemplateColumns: '1fr'
-      },
-      signatureRow: {
-        flexDirection: 'column'
-      },
-      attendeeGrid: {
-        gridTemplateColumns: '1fr !important'
-      }
+    errorMessage: {
+      backgroundColor: '#fee',
+      border: '1px solid #fcc',
+      color: '#c33',
+      padding: '12px',
+      borderRadius: '6px',
+      marginBottom: '16px'
+    },
+    loadingMessage: {
+      backgroundColor: '#fef9e7',
+      border: '1px solid #fde047',
+      color: '#a16207',
+      padding: '12px',
+      borderRadius: '6px',
+      marginBottom: '16px'
     }
   };
 
@@ -548,16 +567,23 @@ const PDFFormFiller = () => {
     );
   }, [attendees.length]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     initAttendeeSignatureRefs();
   }, [attendees.length, initAttendeeSignatureRefs]);
 
+  const updateCheckbox = (checkboxKey, value) => {
+    setCheckboxes(prev => ({
+      ...prev,
+      [checkboxKey]: value
+    }));
+  };
+
   const getEventCoordinates = useCallback((e, canvasRef) => {
     const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    
     const rect = canvas.getBoundingClientRect();
-    
     let clientX, clientY;
-    
     if (e.touches && e.touches[0]) {
       clientX = e.touches[0].clientX;
       clientY = e.touches[0].clientY;
@@ -565,17 +591,15 @@ const PDFFormFiller = () => {
       clientX = e.clientX;
       clientY = e.clientY;
     }
-    
-    return {
-      x: clientX - rect.left,
-      y: clientY - rect.top
-    };
+    return { x: clientX - rect.left, y: clientY - rect.top };
   }, []);
 
   const startDrawing = useCallback((e, signatureType) => {
     e.preventDefault();
     setIsDrawing(prev => ({ ...prev, [signatureType]: true }));
     const canvas = signatureCanvasRefs[signatureType].current;
+    if (!canvas) return;
+    
     const ctx = canvas.getContext('2d');
     const coords = getEventCoordinates(e, signatureCanvasRefs[signatureType]);
     ctx.beginPath();
@@ -585,7 +609,10 @@ const PDFFormFiller = () => {
   const draw = useCallback((e, signatureType) => {
     e.preventDefault();
     if (!isDrawing[signatureType]) return;
+    
     const canvas = signatureCanvasRefs[signatureType].current;
+    if (!canvas) return;
+    
     const ctx = canvas.getContext('2d');
     const coords = getEventCoordinates(e, signatureCanvasRefs[signatureType]);
     ctx.lineWidth = 2;
@@ -600,6 +627,8 @@ const PDFFormFiller = () => {
     if (isDrawing[signatureType]) {
       setIsDrawing(prev => ({ ...prev, [signatureType]: false }));
       const canvas = signatureCanvasRefs[signatureType].current;
+      if (!canvas) return;
+      
       const signatureDataUrl = canvas.toDataURL();
       setSignatureData(prev => ({ ...prev, [signatureType]: signatureDataUrl }));
     }
@@ -608,7 +637,9 @@ const PDFFormFiller = () => {
   const startDrawingAttendee = useCallback((e, attendeeIndex) => {
     e.preventDefault();
     setIsDrawingAttendee(prev => ({ ...prev, [attendeeIndex]: true }));
-    const canvas = attendeeSignatureRefs.current[attendeeIndex].current;
+    const canvas = attendeeSignatureRefs.current[attendeeIndex]?.current;
+    if (!canvas) return;
+    
     const ctx = canvas.getContext('2d');
     const coords = getEventCoordinates(e, attendeeSignatureRefs.current[attendeeIndex]);
     ctx.beginPath();
@@ -618,7 +649,10 @@ const PDFFormFiller = () => {
   const drawAttendee = useCallback((e, attendeeIndex) => {
     e.preventDefault();
     if (!isDrawingAttendee[attendeeIndex]) return;
-    const canvas = attendeeSignatureRefs.current[attendeeIndex].current;
+    
+    const canvas = attendeeSignatureRefs.current[attendeeIndex]?.current;
+    if (!canvas) return;
+    
     const ctx = canvas.getContext('2d');
     const coords = getEventCoordinates(e, attendeeSignatureRefs.current[attendeeIndex]);
     ctx.lineWidth = 2;
@@ -632,7 +666,9 @@ const PDFFormFiller = () => {
     e.preventDefault();
     if (isDrawingAttendee[attendeeIndex]) {
       setIsDrawingAttendee(prev => ({ ...prev, [attendeeIndex]: false }));
-      const canvas = attendeeSignatureRefs.current[attendeeIndex].current;
+      const canvas = attendeeSignatureRefs.current[attendeeIndex]?.current;
+      if (!canvas) return;
+      
       const signatureDataUrl = canvas.toDataURL();
       setAttendees(prev => prev.map((attendee, i) => 
         i === attendeeIndex ? { ...attendee, signature: signatureDataUrl } : attendee
@@ -642,27 +678,22 @@ const PDFFormFiller = () => {
 
   const clearSignature = (signatureType) => {
     const canvas = signatureCanvasRefs[signatureType].current;
+    if (!canvas) return;
+    
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setSignatureData(prev => ({ ...prev, [signatureType]: null }));
   };
 
   const clearAttendeeSignature = (attendeeIndex) => {
-    const canvas = attendeeSignatureRefs.current[attendeeIndex].current;
+    const canvas = attendeeSignatureRefs.current[attendeeIndex]?.current;
+    if (!canvas) return;
+    
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setAttendees(prev => prev.map((attendee, i) => 
       i === attendeeIndex ? { ...attendee, signature: null } : attendee
     ));
-  };
-
-  const clearAllSignatures = () => {
-    Object.keys(signatureCanvasRefs).forEach(type => {
-      clearSignature(type);
-    });
-    attendees.forEach((_, index) => {
-      clearAttendeeSignature(index);
-    });
   };
 
   const handleFileUpload = async (event) => {
@@ -672,15 +703,17 @@ const PDFFormFiller = () => {
       const url = URL.createObjectURL(file);
       setPdfUrl(url);
       
-      try {
-        const { PDFDocument } = await import('https://cdn.skypack.dev/pdf-lib@^1.17.1');
-        const arrayBuffer = await file.arrayBuffer();
-        const pdfDoc = await PDFDocument.load(arrayBuffer);
-        const pages = pdfDoc.getPages();
-        setTotalPages(pages.length);
-      } catch (error) {
-        console.error('Error counting pages:', error);
-        setTotalPages(0);
+      if (pdfLibLoaded && window.PDFLib) {
+        try {
+          const { PDFDocument } = window.PDFLib;
+          const arrayBuffer = await file.arrayBuffer();
+          const pdfDoc = await PDFDocument.load(arrayBuffer);
+          const pages = pdfDoc.getPages();
+          setTotalPages(pages.length);
+        } catch (error) {
+          console.error('Error loading PDF:', error);
+          setTotalPages(0);
+        }
       }
     } else {
       alert('Please select a PDF file');
@@ -709,7 +742,6 @@ const PDFFormFiller = () => {
   const removeAttendee = (index) => {
     if (attendees.length > 1) {
       setAttendees(prev => prev.filter((_, i) => i !== index));
-      // Clean up signature drawing state for this attendee
       setIsDrawingAttendee(prev => {
         const newState = { ...prev };
         delete newState[index];
@@ -718,7 +750,28 @@ const PDFFormFiller = () => {
     }
   };
 
+  const loadCheckmarkImage = async (pdfDoc) => {
+    try {
+      const response = await fetch('/centang.png');
+      if (!response.ok) {
+        throw new Error('Failed to load checkmark image');
+      }
+      const imageArrayBuffer = await response.arrayBuffer();
+      
+      const checkmarkImage = await pdfDoc.embedPng(imageArrayBuffer);
+      return checkmarkImage;
+    } catch (error) {
+      console.error('Error loading checkmark image:', error);
+      return null;
+    }
+  };
+
   const handleGeneratePDF = async () => {
+    if (!pdfLibLoaded || !window.PDFLib) {
+      alert('PDF processing library is not loaded yet. Please wait a moment and try again.');
+      return;
+    }
+
     const basicRequiredFields = ['namaNasabah', 'alamat', 'namaImplementor', 'tanggalHari', 'tanggalBulan', 'tanggalTahun'];
     const missingBasicFields = basicRequiredFields.filter(field => !formData[field].trim());
     
@@ -727,39 +780,49 @@ const PDFFormFiller = () => {
     );
     
     if (!pdfFile || missingBasicFields.length > 0 || emptyAttendees) {
-      alert('Please upload PDF and fill all required fields including all attendee information (name, institution, contact, and description)');
+      alert('Please upload PDF and fill all required fields including all attendee information');
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      const { PDFDocument, rgb } = await import('https://cdn.skypack.dev/pdf-lib@^1.17.1');
+      const { PDFDocument, rgb } = window.PDFLib;
       
       const arrayBuffer = await pdfFile.arrayBuffer();
       const pdfDoc = await PDFDocument.load(arrayBuffer);
       const pages = pdfDoc.getPages();
       
-      for (const [field, coord] of Object.entries(basicCoordinates)) {
-        const pageIndex = coord.page - 1;
-        if (pageIndex >= pages.length || pageIndex < 0) {
-          alert(`Halaman ${coord.page} untuk ${field} tidak tersedia! PDF ini hanya memiliki ${pages.length} halaman.`);
-          setIsProcessing(false);
-          return;
-        }
-      }
+      const checkmarkImage = await loadCheckmarkImage(pdfDoc);
       
       Object.entries(formData).forEach(([field, value]) => {
         if (value.trim()) {
           const coord = basicCoordinates[field];
-          const page = pages[coord.page - 1];
-          
-          page.drawText(value, {
-            x: coord.x,
-            y: coord.y,
-            size: 10,
-            color: rgb(0, 0, 0),
-          });
+          if (coord && pages[coord.page - 1]) {
+            const page = pages[coord.page - 1];
+            page.drawText(value, {
+              x: coord.x,
+              y: coord.y,
+              size: 10,
+              color: rgb(0, 0, 0),
+            });
+          }
+        }
+      });
+      
+      Object.entries(checkboxes).forEach(([checkboxKey, isChecked]) => {
+        if (isChecked && checkboxCoordinates[checkboxKey]) {
+          const coord = checkboxCoordinates[checkboxKey];
+          if (pages[coord.page - 1] && checkmarkImage) {
+            const page = pages[coord.page - 1];
+            
+            page.drawImage(checkmarkImage, {
+              x: coord.x,
+              y: coord.y,
+              width: 12,  
+              height: 12, 
+            });
+          }
         }
       });
       
@@ -767,25 +830,29 @@ const PDFFormFiller = () => {
       for (const signatureType of signatureTypes) {
         if (signatureData[signatureType]) {
           const signatureCoord = basicCoordinates[`signature${signatureType.charAt(0).toUpperCase() + signatureType.slice(1)}`];
-          const page = pages[signatureCoord.page - 1];
-          
-          const canvas = signatureCanvasRefs[signatureType].current;
-          const canvasWidth = canvas.width;
-          const canvasHeight = canvas.height;
-          
-          const aspectRatio = canvasWidth / canvasHeight;
-          
-          const pdfSignatureWidth = 120; 
-          const pdfSignatureHeight = pdfSignatureWidth / aspectRatio;
-          
-          const signatureImage = await pdfDoc.embedPng(signatureData[signatureType]);
-          
-          page.drawImage(signatureImage, {
-            x: signatureCoord.x,
-            y: signatureCoord.y,
-            width: pdfSignatureWidth,
-            height: pdfSignatureHeight,
-          });
+          if (signatureCoord && pages[signatureCoord.page - 1]) {
+            const page = pages[signatureCoord.page - 1];
+            
+            try {
+              const canvas = signatureCanvasRefs[signatureType].current;
+              const canvasWidth = canvas.width;
+              const canvasHeight = canvas.height;
+              const aspectRatio = canvasWidth / canvasHeight;
+              const pdfSignatureWidth = 120;
+              const pdfSignatureHeight = pdfSignatureWidth / aspectRatio;
+              
+              const signatureImage = await pdfDoc.embedPng(signatureData[signatureType]);
+              
+              page.drawImage(signatureImage, {
+                x: signatureCoord.x,
+                y: signatureCoord.y,
+                width: pdfSignatureWidth,
+                height: pdfSignatureHeight,
+              });
+            } catch (error) {
+              console.error(`Error adding signature ${signatureType}:`, error);
+            }
+          }
         }
       }
       
@@ -794,7 +861,7 @@ const PDFFormFiller = () => {
         if (index < attendeeCoordinates.length) {
           const coords = attendeeCoordinates[index];
           
-          if (attendee.nama.trim()) {
+          if (attendee.nama.trim() && pages[coords.nama.page - 1]) {
             const page = pages[coords.nama.page - 1];
             page.drawText(attendee.nama, {
               x: coords.nama.x,
@@ -804,7 +871,7 @@ const PDFFormFiller = () => {
             });
           }
           
-          if (attendee.instansiUnit.trim()) {
+          if (attendee.instansiUnit.trim() && pages[coords.instansiUnit.page - 1]) {
             const page = pages[coords.instansiUnit.page - 1];
             page.drawText(attendee.instansiUnit, {
               x: coords.instansiUnit.x,
@@ -814,7 +881,7 @@ const PDFFormFiller = () => {
             });
           }
           
-          if (attendee.contact.trim()) {
+          if (attendee.contact.trim() && pages[coords.contact.page - 1]) {
             const page = pages[coords.contact.page - 1];
             page.drawText(attendee.contact, {
               x: coords.contact.x,
@@ -824,7 +891,7 @@ const PDFFormFiller = () => {
             });
           }
 
-          if (attendee.keterangan.trim()) {
+          if (attendee.keterangan.trim() && pages[coords.keterangan.page - 1]) {
             const page = pages[coords.keterangan.page - 1];
             page.drawText(attendee.keterangan, {
               x: coords.keterangan.x,
@@ -834,26 +901,30 @@ const PDFFormFiller = () => {
             });
           }
 
-          if (attendee.signature) {
+          if (attendee.signature && pages[coords.signature.page - 1]) {
             const page = pages[coords.signature.page - 1];
             
-            const canvas = attendeeSignatureRefs.current[index].current;
-            const canvasWidth = canvas.width;
-            const canvasHeight = canvas.height;
-            
-            const aspectRatio = canvasWidth / canvasHeight;
-            
-            const pdfSignatureWidth = 80; 
-            const pdfSignatureHeight = pdfSignatureWidth / aspectRatio;
-            
-            const signatureImage = await pdfDoc.embedPng(attendee.signature);
-            
-            page.drawImage(signatureImage, {
-              x: coords.signature.x,
-              y: coords.signature.y,
-              width: pdfSignatureWidth,
-              height: pdfSignatureHeight,
-            });
+            try {
+              const canvas = attendeeSignatureRefs.current[index]?.current;
+              if (canvas) {
+                const canvasWidth = canvas.width;
+                const canvasHeight = canvas.height;
+                const aspectRatio = canvasWidth / canvasHeight;
+                const pdfSignatureWidth = 80;
+                const pdfSignatureHeight = pdfSignatureWidth / aspectRatio;
+                
+                const signatureImage = await pdfDoc.embedPng(attendee.signature);
+                
+                page.drawImage(signatureImage, {
+                  x: coords.signature.x,
+                  y: coords.signature.y,
+                  width: pdfSignatureWidth,
+                  height: pdfSignatureHeight,
+                });
+              }
+            } catch (error) {
+              console.error(`Error adding attendee signature ${index}:`, error);
+            }
           }
         }
       }
@@ -867,10 +938,11 @@ const PDFFormFiller = () => {
       link.click();
       
       URL.revokeObjectURL(url);
+      alert('PDF generated successfully!');
       
     } catch (error) {
       console.error('Error processing PDF:', error);
-      alert('Error processing PDF. This might be due to browser limitations with external libraries.');
+      alert(`Error processing PDF: ${error.message || 'Unknown error occurred'}`);
     }
     
     setIsProcessing(false);
@@ -887,19 +959,38 @@ const PDFFormFiller = () => {
       tanggalBulan: '',
       tanggalTahun: ''
     });
+    setCheckboxes({
+      mcm_main: false,
+      mcm_approver_pending: false,
+      mcm_account_info: false,
+      mcm_transfer: false,
+      mcm_mass_upload: false,
+      mcm_payroll: false,
+      mcm_batch_upload: false,
+      mcm_bill_payment_upload: false,
+      mcm_mpn_payment: false,
+      mcm_bill_payment: false,
+      mcm_info_management: false,
+      mcm_transaction_status: false,
+      mcm_cut_off_time: false,
+      mcm_template_format: false,
+      mcm_help_desk: false,
+      mcm_others: false,
+      mcm_sysadmin_main: false,
+      mcm_account_grouping: false,
+      mcm_user_grouping: false,
+      mcm_user_creation: false,
+      mcm_reset_password: false,
+      mcm_unlock_user: false,
+      mcm_user_still_login: false,
+      mcm_authorized_limit: false,
+      mcm_utilities: false,
+      mcm_sysadmin_others: false,
+      approval_sudah: false,
+      approval_belum: false
+    });
     setAttendees([{ nama: '', instansiUnit: '', contact: '', keterangan: '', signature: null }]);
     setTotalPages(0);
-    setBasicCoordinates({
-      namaNasabah: { x: 210, y: 700, page: 1 },
-      alamat: { x: 210, y: 677, page: 1 },
-      namaImplementor: { x: 210, y: 627, page: 1 },
-      tanggalHari: { x: 210, y: 613, page: 1 },
-      tanggalBulan: { x: 355, y: 613, page: 1 },
-      tanggalTahun: { x: 470, y: 613, page: 1 },
-      signatureCabang: { x: 70, y: 220, page: 1 },
-      signatureImplementor: { x: 250, y: 220, page: 1 },
-      signatureNasabah: { x: 430, y: 220, page: 1 }
-    });
     setSignatureData({
       cabang: null,
       implementor: null,
@@ -911,7 +1002,6 @@ const PDFFormFiller = () => {
       nasabah: false
     });
     setIsDrawingAttendee({});
-    clearAllSignatures();
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -922,8 +1012,30 @@ const PDFFormFiller = () => {
     const attendeesComplete = attendees.every(attendee => 
       attendee.nama.trim() && attendee.instansiUnit.trim() && attendee.contact.trim() && attendee.keterangan.trim()
     );
-    return pdfFile && basicComplete && attendeesComplete;
+    return pdfFile && basicComplete && attendeesComplete && pdfLibLoaded;
   };
+
+  const renderCheckboxSection = (title, items, parentKey = null) => (
+    <div style={{ marginBottom: '16px' }}>
+      <h4 style={styles.subsectionTitle}>{title}</h4>
+      <div style={styles.checkboxContainer}>
+        {items.map((item) => (
+          <div key={item.key} style={item.isSubItem ? styles.checkboxSubItem : styles.checkboxItem}>
+            <input
+              type="checkbox"
+              id={item.key}
+              checked={checkboxes[item.key]}
+              onChange={(e) => updateCheckbox(item.key, e.target.checked)}
+              style={styles.checkbox}
+            />
+            <label htmlFor={item.key} style={styles.checkboxLabel}>
+              {item.label}
+            </label>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   const renderSignatureCard = (signatureType, title) => (
     <div key={signatureType} style={styles.signatureCard}>
@@ -1019,50 +1131,98 @@ const PDFFormFiller = () => {
     );
   };
 
+  const mcmItems = [
+    { key: 'mcm_main', label: 'Mandiri Cash Management (MCM)', isSubItem: false },
+    { key: 'mcm_approver_pending', label: 'Approver Pending Task', isSubItem: true },
+    { key: 'mcm_account_info', label: 'Account Information', isSubItem: true },
+    { key: 'mcm_transfer', label: 'In House Transfer, Domestic Transfer, Int Transfer', isSubItem: true },
+    { key: 'mcm_mass_upload', label: 'Management Mass Upload', isSubItem: true },
+    { key: 'mcm_payroll', label: 'Payroll', isSubItem: true },
+    { key: 'mcm_batch_upload', label: 'Batch Upload', isSubItem: true },
+    { key: 'mcm_bill_payment_upload', label: 'Bill Payment Upload', isSubItem: true },
+    { key: 'mcm_mpn_payment', label: 'MPN Payment', isSubItem: true },
+    { key: 'mcm_bill_payment', label: 'Bill Payment', isSubItem: true },
+    { key: 'mcm_info_management', label: 'Information Management', isSubItem: true },
+    { key: 'mcm_transaction_status', label: 'Transaction Status', isSubItem: true },
+    { key: 'mcm_cut_off_time', label: 'Cut Off Time Info', isSubItem: true },
+    { key: 'mcm_template_format', label: 'Template Format Upload', isSubItem: true },
+    { key: 'mcm_help_desk', label: 'MCM Help Desk', isSubItem: true },
+    { key: 'mcm_others', label: 'Lainnya...', isSubItem: true }
+  ];
+
+  const mcmSysadminItems = [
+    { key: 'mcm_sysadmin_main', label: 'Mandiri Cash Management (MCM) Sysadmin', isSubItem: false },
+    { key: 'mcm_account_grouping', label: 'Account Grouping/Edit', isSubItem: true },
+    { key: 'mcm_user_grouping', label: 'User Grouping/Edit', isSubItem: true },
+    { key: 'mcm_user_creation', label: 'User Creation/Edit', isSubItem: true },
+    { key: 'mcm_reset_password', label: 'Reset Password User', isSubItem: true },
+    { key: 'mcm_unlock_user', label: 'Unlock User', isSubItem: true },
+    { key: 'mcm_user_still_login', label: 'User Still Login', isSubItem: true },
+    { key: 'mcm_authorized_limit', label: 'Authorized Limit Schemed + Approval Matriks', isSubItem: true },
+    { key: 'mcm_utilities', label: 'Utilities', isSubItem: true },
+    { key: 'mcm_sysadmin_others', label: 'Lainnya...', isSubItem: true }
+  ];
+
+  const approvalItems = [
+    { key: 'approval_sudah', label: 'Sudah', isSubItem: false },
+    { key: 'approval_belum', label: 'Belum', isSubItem: false }
+  ];
+
   return (
     <div style={styles.container}>
       <div style={styles.wrapper}>
         <div style={styles.mainCard}>
           <div style={styles.header}>
-            <div style={styles.iconContainer}>
-              <svg style={styles.icon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <div style={styles.headerText}>
-              <h1 style={styles.title}>PDF Form Filler</h1>
-              <p style={styles.subtitle}>Fill and generate PDF forms with multiple digital signatures</p>
+            <div>
+              <h1 style={styles.title}>Enhanced PDF Form Filler</h1>
+              <p style={styles.subtitle}>Fill PDF forms with checkboxes and multiple digital signatures</p>
             </div>
           </div>
 
           <div style={styles.content}>
-            <div style={styles.section}>
+            {!pdfLibLoaded && !loadingError && (
+              <div style={styles.loadingMessage}>
+                <strong>Loading PDF processing library...</strong> Please wait a moment before uploading your PDF.
+              </div>
+            )}
+            
+            {loadingError && (
+              <div style={styles.errorMessage}>
+                <strong>Error:</strong> {loadingError}
+              </div>
+            )}
+
+            <div>
               <label style={styles.sectionTitle}>Upload PDF Template</label>
               <div 
                 style={styles.uploadArea}
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => pdfLibLoaded && fileInputRef.current?.click()}
               >
-                <svg style={styles.uploadIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept=".pdf"
                   onChange={handleFileUpload}
                   style={styles.hiddenInput}
+                  disabled={!pdfLibLoaded}
                 />
                 <div>
-                  <button style={styles.uploadButton}>
-                    Choose PDF File
+                  <button 
+                    style={{
+                      ...styles.uploadButton,
+                      ...(pdfLibLoaded ? {} : styles.buttonDisabled)
+                    }}
+                    disabled={!pdfLibLoaded}
+                  >
+                    {pdfLibLoaded ? 'Choose PDF File' : 'Loading...'}
                   </button>
-                  <p style={styles.uploadInfo}>or drag and drop</p>
+                  <p style={styles.uploadInfo}>
+                    {pdfLibLoaded ? 'or drag and drop' : 'Please wait for library to load'}
+                  </p>
                 </div>
                 {pdfFile && (
                   <div style={styles.fileInfo}>
-                    <p style={styles.fileInfoText}>
-                      📁 {pdfFile.name}
-                    </p>
+                    <p style={styles.fileInfoText}>📄 {pdfFile.name}</p>
                     {totalPages > 0 && (
                       <p style={{...styles.fileInfoText, marginTop: '4px'}}>
                         📄 Total pages: {totalPages}
@@ -1073,6 +1233,7 @@ const PDFFormFiller = () => {
               </div>
             </div>
 
+            {/* PDF Preview */}
             {pdfUrl && (
               <div style={styles.preview}>
                 <h3 style={styles.sectionTitle}>PDF Preview</h3>
@@ -1112,7 +1273,7 @@ const PDFFormFiller = () => {
 
             <div style={styles.sectionCard}>
               <h3 style={styles.sectionTitle}>Implementation Profile</h3>
-              <div style={styles.section}>
+              <div style={styles.grid}>
                 <div>
                   <label style={styles.label}>Implementor Name</label>
                   <input
@@ -1164,23 +1325,20 @@ const PDFFormFiller = () => {
             </div>
 
             <div style={styles.sectionCard}>
-              <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '8px'}}>
-                <h3 style={styles.sectionTitle}>Main Digital Signatures</h3>
-                <button
-                  onClick={() => {
-                    Object.keys(signatureCanvasRefs).forEach(type => {
-                      clearSignature(type);
-                    });
-                  }}
-                  style={styles.buttonDanger}
-                >
-                  <svg style={{width: '12px', height: '12px', marginRight: '4px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Clear Main Signatures
-                </button>
+              <h3 style={styles.sectionTitle}>Silabus Implementasi</h3>
+              <div style={styles.twoColumnLayout}>
+                <div>
+                  {renderCheckboxSection('Mandiri Cash Management (MCM)', mcmItems)}
+                </div>
+                <div>
+                  {renderCheckboxSection('MCM Sysadmin', mcmSysadminItems)}
+                  {renderCheckboxSection('Skema approval matrix sudah sesuai kebutuhan perusahaan', approvalItems)}
+                </div>
               </div>
-              
+            </div>
+
+            <div style={styles.sectionCard}>
+              <h3 style={styles.sectionTitle}>Main Digital Signatures</h3>
               <div style={styles.signatureRow}>
                 {renderSignatureCard('cabang', 'Signature Cabang')}
                 {renderSignatureCard('implementor', 'Signature Implementor')}
@@ -1208,7 +1366,7 @@ const PDFFormFiller = () => {
                 </button>
               </div>
 
-              <div style={styles.section}>
+              <div>
                 {attendees.map((attendee, index) => (
                   <div key={index} style={styles.attendeeCard}>
                     <div style={styles.attendeeHeader}>
@@ -1226,13 +1384,7 @@ const PDFFormFiller = () => {
                       )}
                     </div>
 
-                    <div 
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-                        gap: '16px'
-                      }}
-                    >
+                    <div style={{...styles.grid, ...styles.gridCols2}}>
                       <div>
                         <label style={styles.label}>Name</label>
                         <input
@@ -1304,44 +1456,61 @@ const PDFFormFiller = () => {
                   ...styles.buttonLargeSecondary
                 }}
               >
-                Reset
+                <svg style={{width: '20px', height: '20px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Reset Form
               </button>
             </div>
-          </div>
-        </div>
 
-        <div style={styles.infoCard}>
-          <h3 style={styles.infoTitle}>Important Notes - Enhanced Features</h3>
-          <ul style={styles.infoList}>
-            <li style={styles.infoItem}>
-              <span style={styles.bullet}>•</span>
-              <span><strong>Upload PDF template</strong> - The application will automatically detect the number of pages</span>
-            </li>
-            <li style={styles.infoItem}>
-              <span style={styles.bullet}>•</span>
-              <span><strong>Fill all basic fields</strong> - Customer name, address, implementor name, date (3 boxes)</span>
-            </li>
-            <li style={styles.infoItem}>
-              <span style={styles.bullet}>•</span>
-              <span><strong>Main digital signatures</strong> - 3 main signatures: Cabang, Implementor, and Nasabah</span>
-            </li>
-            <li style={styles.infoItem}>
-              <span style={styles.bullet}>•</span>
-              <span><strong>Mobile signature support</strong> - Works on both mobile devices (touch) and desktop (mouse)</span>
-            </li>
-            <li style={styles.infoItem}>
-              <span style={styles.bullet}>•</span>
-              <span><strong>Add/remove attendees</strong> - Click + button to add attendees (max 10), - button to remove</span>
-            </li>
-            <li style={styles.infoItem}>
-              <span style={styles.bullet}>•</span>
-              <span><strong>Complete attendee validation</strong> - All attendee fields including signature must be filled</span>
-            </li>
-            <li style={styles.infoItem}>
-              <span style={styles.bullet}>•</span>
-              <span><strong>10 attendee slots available</strong> - According to the PDF format which has 10 rows for attendance</span>
-            </li>
-          </ul>
+            <div style={styles.sectionCard}>
+              <h3 style={styles.sectionTitle}>Instructions</h3>
+              <div style={{fontSize: '14px', color: '#666', lineHeight: '1.6'}}>
+                <p><strong>How to use this PDF Form Filler:</strong></p>
+                <ol style={{paddingLeft: '20px', margin: '12px 0'}}>
+                  <li>Wait for the PDF library to load completely (you'll see a loading message)</li>
+                  <li>Upload your PDF template using the file upload button</li>
+                  <li>Fill in all the required customer and implementation information</li>
+                  <li>Select the appropriate checkboxes for the implementation syllabus</li>
+                  <li>Draw digital signatures for Cabang, Implementor, and Nasabah</li>
+                  <li>Add attendee information and their digital signatures</li>
+                  <li>Click "Generate & Download PDF" to create the filled form</li>
+                </ol>
+                
+                <p style={{marginTop: '16px'}}><strong>Tips:</strong></p>
+                <ul style={{paddingLeft: '20px', margin: '12px 0'}}>
+                  <li>Make sure all required fields are filled before generating the PDF</li>
+                  <li>Signatures can be drawn using mouse/touch - use the "Clear" button to redraw</li>
+                  <li>You can add up to 10 attendees to the form</li>
+                  <li>The coordinates are pre-configured for the standard form layout</li>
+                  <li>If you encounter issues, try refreshing the page and waiting for libraries to load</li>
+                  <li>Checkmarks will be displayed as images from centang.png file in public folder</li>
+                </ul>
+
+                <p style={{marginTop: '16px'}}><strong>Browser Compatibility:</strong></p>
+                <p>This tool works best in modern browsers (Chrome, Firefox, Safari, Edge). Make sure JavaScript is enabled.</p>
+              </div>
+            </div>
+
+            {process.env.NODE_ENV === 'development' && (
+              <div style={styles.sectionCard}>
+                <h3 style={styles.sectionTitle}>Debug Information</h3>
+                <div style={{fontSize: '12px', color: '#888'}}>
+                  <p><strong>PDF Library Status:</strong> {pdfLibLoaded ? '✅ Loaded' : '⏳ Loading...'}</p>
+                  <p><strong>PDF File:</strong> {pdfFile ? `✅ ${pdfFile.name}` : '❌ No file'}</p>
+                  <p><strong>Total Pages:</strong> {totalPages}</p>
+                  <p><strong>Form Complete:</strong> {isFormComplete() ? '✅ Ready' : '❌ Missing data'}</p>
+                  <p><strong>Attendees:</strong> {attendees.length}</p>
+                  <p><strong>Signatures:</strong> 
+                    Cabang: {signatureData.cabang ? '✅' : '❌'}, 
+                    Implementor: {signatureData.implementor ? '✅' : '❌'}, 
+                    Nasabah: {signatureData.nasabah ? '✅' : '❌'}
+                  </p>
+                  <p><strong>Checkmark Image:</strong> Will load from /centang.png</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
