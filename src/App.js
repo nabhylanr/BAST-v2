@@ -1168,14 +1168,28 @@ const PDFFormFiller = () => {
     { key: 'approval_belum', label: 'Belum', isSubItem: false }
   ];
 
+  const handleSelectAll = (e) => {
+    const checked = e.target.checked;
+    const updatedCheckboxes = {};
+    Object.keys(checkboxes).forEach(key => {
+      updatedCheckboxes[key] = checked;
+    });
+    setCheckboxes(updatedCheckboxes);
+  };
+
+  const handleCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setCheckboxes(prev => ({ ...prev, [name]: checked }));
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.wrapper}>
         <div style={styles.mainCard}>
           <div style={styles.header}>
             <div>
-              <h1 style={styles.title}>Enhanced PDF Form Filler</h1>
-              <p style={styles.subtitle}>Fill PDF forms with checkboxes and multiple digital signatures</p>
+              <h1 style={styles.title}>Berita Acara Implementasi</h1>
+              <p style={styles.subtitle}>Fill PDF forms with checkboxes, data, and multiple digital signatures.</p>
             </div>
           </div>
 
@@ -1233,7 +1247,6 @@ const PDFFormFiller = () => {
               </div>
             </div>
 
-            {/* PDF Preview */}
             {pdfUrl && (
               <div style={styles.preview}>
                 <h3 style={styles.sectionTitle}>PDF Preview</h3>
@@ -1325,7 +1338,19 @@ const PDFFormFiller = () => {
             </div>
 
             <div style={styles.sectionCard}>
-              <h3 style={styles.sectionTitle}>Silabus Implementasi</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={styles.sectionTitle}>Silabus Implementasi</h3>
+                <label style={{ fontSize: '14px', fontWeight: 'normal', color: '#555', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    onChange={handleSelectAll}
+                    checked={Object.values(checkboxes).every(val => val)}
+                    style={{ transform: 'scale(1.2)' }}
+                  />
+                  Pilih Semua
+                </label>
+              </div>
+
               <div style={styles.twoColumnLayout}>
                 <div>
                   {renderCheckboxSection('Mandiri Cash Management (MCM)', mcmItems)}
@@ -1334,15 +1359,6 @@ const PDFFormFiller = () => {
                   {renderCheckboxSection('MCM Sysadmin', mcmSysadminItems)}
                   {renderCheckboxSection('Skema approval matrix sudah sesuai kebutuhan perusahaan', approvalItems)}
                 </div>
-              </div>
-            </div>
-
-            <div style={styles.sectionCard}>
-              <h3 style={styles.sectionTitle}>Main Digital Signatures</h3>
-              <div style={styles.signatureRow}>
-                {renderSignatureCard('cabang', 'Signature Cabang')}
-                {renderSignatureCard('implementor', 'Signature Implementor')}
-                {renderSignatureCard('nasabah', 'Signature Nasabah')}
               </div>
             </div>
 
