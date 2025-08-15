@@ -1316,6 +1316,7 @@ const PDFFormFiller = () => {
                         type="text"
                         value={formData.tanggalBulan}
                         onChange={(e) => updateFormData('tanggalBulan', e.target.value)}
+                        maxLength="2"
                         style={styles.dateInput}
                         placeholder="MM"
                       />
