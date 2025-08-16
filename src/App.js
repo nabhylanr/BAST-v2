@@ -107,19 +107,19 @@ const PDFFormFiller = () => {
     mcm_help_desk: { x: 85, y: 358, page: 1 },
     mcm_others: { x: 85, y: 346, page: 1 },
     
-    mcm_sysadmin_main: { x: 571, y: 470, page: 1 },
-    mcm_account_grouping: { x: 598, y: 445, page: 1 },
-    mcm_user_grouping: { x: 598, y: 420, page: 1 },
-    mcm_user_creation: { x: 598, y: 395, page: 1 },
-    mcm_reset_password: { x: 598, y: 370, page: 1 },
-    mcm_unlock_user: { x: 598, y: 345, page: 1 },
-    mcm_user_still_login: { x: 598, y: 320, page: 1 },
-    mcm_authorized_limit: { x: 598, y: 295, page: 1 },
-    mcm_utilities: { x: 598, y: 270, page: 1 },
-    mcm_sysadmin_others: { x: 598, y: 245, page: 1 },
+    mcm_sysadmin_main: { x: 317, y: 544, page: 1 },
+    mcm_account_grouping: { x: 331, y: 528, page: 1 },
+    mcm_user_grouping: { x: 331, y: 516, page: 1 },
+    mcm_user_creation: { x: 331, y: 504, page: 1 },
+    mcm_reset_password: { x: 331, y: 491, page: 1 },
+    mcm_unlock_user: { x: 331, y: 478, page: 1 },
+    mcm_user_still_login: { x: 331, y: 463, page: 1 },
+    mcm_authorized_limit: { x: 331, y: 448, page: 1 },
+    mcm_utilities: { x: 331, y: 435, page: 1 },
+    mcm_sysadmin_others: { x: 331, y: 424, page: 1 },
     
-    approval_sudah: { x: 608, y: 190, page: 1 },
-    approval_belum: { x: 608, y: 170, page: 1 }
+    approval_sudah: { x: 336, y: 381, page: 1 },
+    approval_belum: { x: 334, y: 360, page: 1 }
   };
 
   const [attendeeCoordinates, setAttendeeCoordinates] = useState([
