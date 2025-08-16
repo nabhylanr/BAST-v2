@@ -12,6 +12,12 @@ const PDFFormFiller = () => {
   });
   
   const [checkboxes, setCheckboxes] = useState({
+    mcm_produk: false,
+
+    kategori_baru: false,
+    kategori_reaktivasi: false,
+    kategori_reimplementasi: false,
+
     mcm_main: false,
     mcm_approver_pending: false,
     mcm_account_info: false,
@@ -90,6 +96,12 @@ const PDFFormFiller = () => {
   });
 
   const checkboxCoordinates = {
+    mcm_produk: { x: 206, y: 595, page: 1 },
+
+    kategori_baru: { x: 206, y: 576, page: 1 },
+    kategori_reaktivasi: { x: 266, y: 576, page: 1 },
+    kategori_reimplementasi: { x: 445, y: 576, page: 1 },
+
     mcm_main: { x: 70, y: 544, page: 1 },
     mcm_approver_pending: { x: 85, y: 530, page: 1 },
     mcm_account_info: { x: 85, y: 518, page: 1 },
@@ -960,6 +972,10 @@ const PDFFormFiller = () => {
       tanggalTahun: ''
     });
     setCheckboxes({
+      mcm_produk: false,
+      kategori_baru: false,
+      kategori_reaktivasi: false,
+      kategori_reimplementasi: false,
       mcm_main: false,
       mcm_approver_pending: false,
       mcm_account_info: false,
@@ -1130,6 +1146,16 @@ const PDFFormFiller = () => {
       </div>
     );
   };
+
+  const solusiProdukItems = [
+    { key: 'mcm_produk', label: 'MCM', isSubItem: false }
+  ];
+
+  const kategoriItems = [
+    { key: 'kategori_baru', label: 'Baru', isSubItem: false },
+    { key: 'kategori_reaktivasi', label: 'Reaktivasi Inquiry - Transaksi', isSubItem: false },
+    { key: 'kategori_reimplementasi', label: 'Reimplementasi', isSubItem: false }
+  ];
 
   const mcmItems = [
     { key: 'mcm_main', label: 'Mandiri Cash Management (MCM)', isSubItem: false },
@@ -1336,6 +1362,9 @@ const PDFFormFiller = () => {
                   </div>
                 </div>
               </div>
+              
+              {renderCheckboxSection('Solusi / Produk', solusiProdukItems, true)}    
+              {renderCheckboxSection('Kategori', kategoriItems, true)}
             </div>
 
             <div style={styles.sectionCard}>
@@ -1360,6 +1389,31 @@ const PDFFormFiller = () => {
                   {renderCheckboxSection('MCM Sysadmin', mcmSysadminItems)}
                   {renderCheckboxSection('Skema approval matrix sudah sesuai kebutuhan perusahaan', approvalItems)}
                 </div>
+              </div>
+            </div>
+
+            <div style={styles.sectionCard}>
+              <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '8px'}}>
+                <h3 style={styles.sectionTitle}>Main Digital Signatures</h3>
+                <button
+                  onClick={() => {
+                    Object.keys(signatureCanvasRefs).forEach(type => {
+                      clearSignature(type);
+                    });
+                  }}
+                  style={styles.buttonDanger}
+                >
+                  <svg style={{width: '12px', height: '12px', marginRight: '4px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Clear Main Signatures
+                </button>
+              </div>
+              
+              <div style={styles.signatureRow}>
+                {renderSignatureCard('cabang', 'Signature Cabang')}
+                {renderSignatureCard('implementor', 'Signature Implementor')}
+                {renderSignatureCard('nasabah', 'Signature Nasabah')}
               </div>
             </div>
 
@@ -1501,32 +1555,12 @@ const PDFFormFiller = () => {
                   <li>You can add up to 10 attendees to the form</li>
                   <li>The coordinates are pre-configured for the standard form layout</li>
                   <li>If you encounter issues, try refreshing the page and waiting for libraries to load</li>
-                  <li>Checkmarks will be displayed as images from centang.png file in public folder</li>
                 </ul>
 
                 <p style={{marginTop: '16px'}}><strong>Browser Compatibility:</strong></p>
                 <p>This tool works best in modern browsers (Chrome, Firefox, Safari, Edge). Make sure JavaScript is enabled.</p>
               </div>
             </div>
-
-            {process.env.NODE_ENV === 'development' && (
-              <div style={styles.sectionCard}>
-                <h3 style={styles.sectionTitle}>Debug Information</h3>
-                <div style={{fontSize: '12px', color: '#888'}}>
-                  <p><strong>PDF Library Status:</strong> {pdfLibLoaded ? '✅ Loaded' : '⏳ Loading...'}</p>
-                  <p><strong>PDF File:</strong> {pdfFile ? `✅ ${pdfFile.name}` : '❌ No file'}</p>
-                  <p><strong>Total Pages:</strong> {totalPages}</p>
-                  <p><strong>Form Complete:</strong> {isFormComplete() ? '✅ Ready' : '❌ Missing data'}</p>
-                  <p><strong>Attendees:</strong> {attendees.length}</p>
-                  <p><strong>Signatures:</strong> 
-                    Cabang: {signatureData.cabang ? '✅' : '❌'}, 
-                    Implementor: {signatureData.implementor ? '✅' : '❌'}, 
-                    Nasabah: {signatureData.nasabah ? '✅' : '❌'}
-                  </p>
-                  <p><strong>Checkmark Image:</strong> Will load from /centang.png</p>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
