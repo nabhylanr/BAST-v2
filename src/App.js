@@ -135,23 +135,27 @@ const PDFFormFiller = () => {
   };
 
   const [attendeeCoordinates, setAttendeeCoordinates] = useState([
-    { 
-      nama: { x: 95, y: 690, page: 3 }, 
-      instansiUnit: { x: 205, y: 690, page: 3 }, 
-      contact: { x: 290, y: 690, page: 3 },
-      keterangan: { x: 378, y: 690, page: 3 },
-      signature: { x: 460, y: 690, page: 3 }
-    },
-    { nama: { x: 95, y: 662, page: 3 }, instansiUnit: { x: 205, y: 662, page: 3 }, contact: { x: 290, y: 662, page: 3 }, keterangan: { x: 378, y: 662, page: 3 }, signature: { x: 460, y: 662, page: 3 }},
-    { nama: { x: 95, y: 633, page: 3 }, instansiUnit: { x: 205, y: 633, page: 3 }, contact: { x: 290, y: 633, page: 3 }, keterangan: { x: 378, y: 633, page: 3 }, signature: { x: 460, y: 633, page: 3 }},
-    { nama: { x: 95, y: 604, page: 3 }, instansiUnit: { x: 205, y: 604, page: 3 }, contact: { x: 290, y: 604, page: 3 }, keterangan: { x: 378, y: 604, page: 3 }, signature: { x: 460, y: 604, page: 3 }},
-    { nama: { x: 95, y: 575, page: 3 }, instansiUnit: { x: 205, y: 575, page: 3 }, contact: { x: 290, y: 575, page: 3 }, keterangan: { x: 378, y: 575, page: 3 }, signature: { x: 460, y: 575, page: 3 }},
-    { nama: { x: 95, y: 546, page: 3 }, instansiUnit: { x: 205, y: 546, page: 3 }, contact: { x: 290, y: 546, page: 3 }, keterangan: { x: 378, y: 546, page: 3 }, signature: { x: 460, y: 546, page: 3 }},
-    { nama: { x: 95, y: 517, page: 3 }, instansiUnit: { x: 205, y: 517, page: 3 }, contact: { x: 290, y: 517, page: 3 }, keterangan: { x: 378, y: 517, page: 3 }, signature: { x: 460, y: 517, page: 3 }},
-    { nama: { x: 95, y: 488, page: 3 }, instansiUnit: { x: 205, y: 488, page: 3 }, contact: { x: 290, y: 488, page: 3 }, keterangan: { x: 378, y: 488, page: 3 }, signature: { x: 460, y: 488, page: 3 }},
-    { nama: { x: 95, y: 459, page: 3 }, instansiUnit: { x: 205, y: 459, page: 3 }, contact: { x: 290, y: 459, page: 3 }, keterangan: { x: 378, y: 459, page: 3 }, signature: { x: 460, y: 459, page: 3 }},
-    { nama: { x: 95, y: 430, page: 3 }, instansiUnit: { x: 205, y: 430, page: 3 }, contact: { x: 290, y: 430, page: 3 }, keterangan: { x: 378, y: 430, page: 3 }, signature: { x: 460, y: 430, page: 3 }}
+    { nama: { x: 95, y: 692, page: 3 }, instansiUnit: { x: 205, y: 692, page: 3 }, contact: { x: 290, y: 692, page: 3 }, keterangan: { x: 378, y: 692, page: 3 }, signature: { x: 460, y: 691, page: 3 }},
+    { nama: { x: 95, y: 663, page: 3 }, instansiUnit: { x: 205, y: 663, page: 3 }, contact: { x: 290, y: 663, page: 3 }, keterangan: { x: 378, y: 663, page: 3 }, signature: { x: 460, y: 662, page: 3 }},
+    { nama: { x: 95, y: 634, page: 3 }, instansiUnit: { x: 205, y: 634, page: 3 }, contact: { x: 290, y: 634, page: 3 }, keterangan: { x: 378, y: 634, page: 3 }, signature: { x: 460, y: 633, page: 3 }},
+    { nama: { x: 95, y: 605, page: 3 }, instansiUnit: { x: 205, y: 605, page: 3 }, contact: { x: 290, y: 605, page: 3 }, keterangan: { x: 378, y: 605, page: 3 }, signature: { x: 460, y: 604, page: 3 }},
+    { nama: { x: 95, y: 576, page: 3 }, instansiUnit: { x: 205, y: 576, page: 3 }, contact: { x: 290, y: 576, page: 3 }, keterangan: { x: 378, y: 576, page: 3 }, signature: { x: 460, y: 575, page: 3 }},
+    { nama: { x: 95, y: 547, page: 3 }, instansiUnit: { x: 205, y: 547, page: 3 }, contact: { x: 290, y: 547, page: 3 }, keterangan: { x: 378, y: 547, page: 3 }, signature: { x: 460, y: 546, page: 3 }},
+    { nama: { x: 95, y: 518, page: 3 }, instansiUnit: { x: 205, y: 518, page: 3 }, contact: { x: 290, y: 518, page: 3 }, keterangan: { x: 378, y: 518, page: 3 }, signature: { x: 460, y: 517, page: 3 }},
+    { nama: { x: 95, y: 489, page: 3 }, instansiUnit: { x: 205, y: 489, page: 3 }, contact: { x: 290, y: 489, page: 3 }, keterangan: { x: 378, y: 489, page: 3 }, signature: { x: 460, y: 488, page: 3 }},
+    { nama: { x: 95, y: 460, page: 3 }, instansiUnit: { x: 205, y: 460, page: 3 }, contact: { x: 290, y: 460, page: 3 }, keterangan: { x: 378, y: 460, page: 3 }, signature: { x: 460, y: 459, page: 3 }},
+    { nama: { x: 95, y: 431, page: 3 }, instansiUnit: { x: 205, y: 431, page: 3 }, contact: { x: 290, y: 431, page: 3 }, keterangan: { x: 378, y: 431, page: 3 }, signature: { x: 460, y: 430, page: 3 }}
   ]);
+
+  const silabusImplementasiCheckboxes = [
+    'mcm_main', 'mcm_approver_pending', 'mcm_account_info', 'mcm_transfer', 
+    'mcm_mass_upload', 'mcm_payroll', 'mcm_batch_upload', 'mcm_bill_payment_upload', 
+    'mcm_mpn_payment', 'mcm_bill_payment', 'mcm_info_management', 'mcm_transaction_status', 
+    'mcm_cut_off_time', 'mcm_template_format', 'mcm_help_desk', 'mcm_others',
+    'mcm_sysadmin_main', 'mcm_account_grouping', 'mcm_user_grouping', 'mcm_user_creation', 
+    'mcm_reset_password', 'mcm_unlock_user', 'mcm_user_still_login', 'mcm_authorized_limit', 
+    'mcm_utilities', 'mcm_sysadmin_others', 'approval_sudah', 'approval_belum'
+  ];
 
   useEffect(() => {
     const loadPdfLib = async () => {
@@ -1183,10 +1187,12 @@ const PDFFormFiller = () => {
 
   const handleSelectAll = (e) => {
     const checked = e.target.checked;
-    const updatedCheckboxes = {};
-    Object.keys(checkboxes).forEach(key => {
+    const updatedCheckboxes = { ...checkboxes };
+    
+    silabusImplementasiCheckboxes.forEach(key => {
       updatedCheckboxes[key] = checked;
     });
+    
     setCheckboxes(updatedCheckboxes);
   };
 
@@ -1320,7 +1326,7 @@ const PDFFormFiller = () => {
                   <input
                     type="checkbox"
                     onChange={handleSelectAll}
-                    checked={Object.values(checkboxes).every(val => val)}
+                    checked={silabusImplementasiCheckboxes.every(key => checkboxes[key])}
                     style={{ transform: 'scale(1.2)' }}
                   />
                   Pilih Semua
