@@ -993,6 +993,21 @@ const PDFFormFiller = () => {
       nasabah: false
     });
     setIsDrawingAttendee({});
+    
+    Object.keys(signatureCanvasRefs).forEach(signatureType => {
+      const canvas = signatureCanvasRefs[signatureType].current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    });
+    
+    attendeeSignatureRefs.current.forEach(canvasRef => {
+      if (canvasRef?.current) {
+        const ctx = canvasRef.current.getContext('2d');
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      }
+    });
   };
 
   const isFormComplete = () => {
