@@ -12,41 +12,41 @@ const PDFFormFiller = () => {
   });
   
   const [checkboxes, setCheckboxes] = useState({
-    mcm_produk: false,
+    mcm_produk: true,
 
-    kategori_baru: false,
+    kategori_baru: true,
     kategori_reaktivasi: false,
     kategori_reimplementasi: false,
 
-    mcm_main: false,
-    mcm_approver_pending: false,
-    mcm_account_info: false,
-    mcm_transfer: false,
-    mcm_mass_upload: false,
-    mcm_payroll: false,
-    mcm_batch_upload: false,
-    mcm_bill_payment_upload: false,
-    mcm_mpn_payment: false,
-    mcm_bill_payment: false,
-    mcm_info_management: false,
-    mcm_transaction_status: false,
-    mcm_cut_off_time: false,
-    mcm_template_format: false,
-    mcm_help_desk: false,
+    mcm_main: true,
+    mcm_approver_pending: true,
+    mcm_account_info: true,
+    mcm_transfer: true,
+    mcm_mass_upload: true,
+    mcm_payroll: true,
+    mcm_batch_upload: true,
+    mcm_bill_payment_upload: true,
+    mcm_mpn_payment: true,
+    mcm_bill_payment: true,
+    mcm_info_management: true,
+    mcm_transaction_status: true,
+    mcm_cut_off_time: true,
+    mcm_template_format: true,
+    mcm_help_desk: true,
     mcm_others: false,
     
-    mcm_sysadmin_main: false,
-    mcm_account_grouping: false,
-    mcm_user_grouping: false,
-    mcm_user_creation: false,
-    mcm_reset_password: false,
-    mcm_unlock_user: false,
-    mcm_user_still_login: false,
-    mcm_authorized_limit: false,
-    mcm_utilities: false,
+    mcm_sysadmin_main: true,
+    mcm_account_grouping: true,
+    mcm_user_grouping: true,
+    mcm_user_creation: true,
+    mcm_reset_password: true,
+    mcm_unlock_user: true,
+    mcm_user_still_login: true,
+    mcm_authorized_limit: true,
+    mcm_utilities: true,
     mcm_sysadmin_others: false,
     
-    approval_sudah: false,
+    approval_sudah: true,
     approval_belum: false
   });
   
@@ -54,12 +54,12 @@ const PDFFormFiller = () => {
     { nama: '', instansiUnit: '', contact: '', keterangan: '', signature: null }
   ]);
   
-  const [pdfUrl, setPdfUrl] = useState(null);
+  const [pdfUrl, setPdfUrl] = useState('/bast.pdf');
   const [isProcessing, setIsProcessing] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
   const [pdfLibLoaded, setPdfLibLoaded] = useState(false);
   const [loadingError, setLoadingError] = useState(null);
-  const fileInputRef = useRef(null);
+  const [pdfLoadError, setPdfLoadError] = useState(null);
   
   const signatureCanvasRefs = {
     cabang: useRef(null),
@@ -199,6 +199,41 @@ const PDFFormFiller = () => {
 
     loadPdfLib();
   }, []);
+
+  useEffect(() => {
+    const loadPdfFile = async () => {
+      if (!pdfLibLoaded) return;
+
+      try {
+        setPdfLoadError(null);
+        
+        const response = await fetch('/bast.pdf');
+        if (!response.ok) {
+          throw new Error(`Failed to load PDF: ${response.status} ${response.statusText}`);
+        }
+        
+        const arrayBuffer = await response.arrayBuffer();
+        const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+        
+        const file = new File([blob], 'bast.pdf', { type: 'application/pdf' });
+        setPdfFile(file);
+        
+        if (window.PDFLib) {
+          const { PDFDocument } = window.PDFLib;
+          const pdfDoc = await PDFDocument.load(arrayBuffer);
+          const pages = pdfDoc.getPages();
+          setTotalPages(pages.length);
+          console.log(`PDF loaded successfully. Total pages: ${pages.length}`);
+        }
+        
+      } catch (error) {
+        console.error('Error loading PDF file:', error);
+        setPdfLoadError(`Failed to load PDF template: ${error.message}`);
+      }
+    };
+
+    loadPdfFile();
+  }, [pdfLibLoaded]);
 
   const styles = {
     container: {
@@ -346,45 +381,6 @@ const PDFFormFiller = () => {
       textAlign: 'center',
       marginTop: '4px'
     },
-    uploadArea: {
-      border: '2px dashed #dedede',
-      borderRadius: '8px',
-      padding: '32px',
-      textAlign: 'center',
-      cursor: 'pointer',
-      backgroundColor: '#fafafa',
-      transition: 'border-color 0.2s'
-    },
-    uploadButton: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      padding: '8px 16px',
-      border: '1px solid #dedede',
-      borderRadius: '6px',
-      backgroundColor: '#fff',
-      color: '#000',
-      fontSize: '14px',
-      fontWeight: '500',
-      cursor: 'pointer',
-      transition: 'background-color 0.2s'
-    },
-    uploadInfo: {
-      fontSize: '14px',
-      color: '#666',
-      marginTop: '8px'
-    },
-    fileInfo: {
-      marginTop: '16px',
-      padding: '12px',
-      backgroundColor: '#eee',
-      borderRadius: '6px'
-    },
-    fileInfoText: {
-      fontSize: '14px',
-      fontWeight: '500',
-      color: '#000',
-      margin: 0
-    },
     attendeesHeader: {
       display: 'flex',
       alignItems: 'center',
@@ -483,9 +479,6 @@ const PDFFormFiller = () => {
       border: '1px solid #dedede',
       borderRadius: '8px'
     },
-    hiddenInput: {
-      display: 'none'
-    },
     signatureContainer: {
       display: 'flex',
       flexDirection: 'column',
@@ -570,7 +563,7 @@ const PDFFormFiller = () => {
       padding: '12px',
       borderRadius: '6px',
       marginBottom: '16px'
-    }
+    },
   };
 
   const initAttendeeSignatureRefs = useCallback(() => {
@@ -708,30 +701,6 @@ const PDFFormFiller = () => {
     ));
   };
 
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
-    if (file && file.type === 'application/pdf') {
-      setPdfFile(file);
-      const url = URL.createObjectURL(file);
-      setPdfUrl(url);
-      
-      if (pdfLibLoaded && window.PDFLib) {
-        try {
-          const { PDFDocument } = window.PDFLib;
-          const arrayBuffer = await file.arrayBuffer();
-          const pdfDoc = await PDFDocument.load(arrayBuffer);
-          const pages = pdfDoc.getPages();
-          setTotalPages(pages.length);
-        } catch (error) {
-          console.error('Error loading PDF:', error);
-          setTotalPages(0);
-        }
-      }
-    } else {
-      alert('Please select a PDF file');
-    }
-  };
-
   const updateFormData = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -784,6 +753,11 @@ const PDFFormFiller = () => {
       return;
     }
 
+    if (!pdfFile) {
+      alert('PDF template is still loading. Please wait a moment and try again.');
+      return;
+    }
+
     const basicRequiredFields = ['namaNasabah', 'alamat', 'namaImplementor', 'tanggalHari', 'tanggalBulan', 'tanggalTahun'];
     const missingBasicFields = basicRequiredFields.filter(field => !formData[field].trim());
     
@@ -791,8 +765,8 @@ const PDFFormFiller = () => {
       !attendee.nama.trim() || !attendee.instansiUnit.trim() || !attendee.contact.trim() || !attendee.keterangan.trim()
     );
     
-    if (!pdfFile || missingBasicFields.length > 0 || emptyAttendees) {
-      alert('Please upload PDF and fill all required fields including all attendee information');
+    if (missingBasicFields.length > 0 || emptyAttendees) {
+      alert('Please fill all required fields including all attendee information');
       return;
     }
 
@@ -946,7 +920,7 @@ const PDFFormFiller = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `filled-form-${Date.now()}.pdf`;
+      link.download = `Berita Acara Implementasi - ${Date.now()}.pdf`;
       link.click();
       
       URL.revokeObjectURL(url);
@@ -961,8 +935,6 @@ const PDFFormFiller = () => {
   };
 
   const resetForm = () => {
-    setPdfFile(null);
-    setPdfUrl(null);
     setFormData({
       namaNasabah: '',
       alamat: '',
@@ -972,41 +944,44 @@ const PDFFormFiller = () => {
       tanggalTahun: ''
     });
     setCheckboxes({
-      mcm_produk: false,
-      kategori_baru: false,
+      mcm_produk: true,
+
+      kategori_baru: true,
       kategori_reaktivasi: false,
       kategori_reimplementasi: false,
-      mcm_main: false,
-      mcm_approver_pending: false,
-      mcm_account_info: false,
-      mcm_transfer: false,
-      mcm_mass_upload: false,
-      mcm_payroll: false,
-      mcm_batch_upload: false,
-      mcm_bill_payment_upload: false,
-      mcm_mpn_payment: false,
-      mcm_bill_payment: false,
-      mcm_info_management: false,
-      mcm_transaction_status: false,
-      mcm_cut_off_time: false,
-      mcm_template_format: false,
-      mcm_help_desk: false,
+
+      mcm_main: true,
+      mcm_approver_pending: true,
+      mcm_account_info: true,
+      mcm_transfer: true,
+      mcm_mass_upload: true,
+      mcm_payroll: true,
+      mcm_batch_upload: true,
+      mcm_bill_payment_upload: true,
+      mcm_mpn_payment: true,
+      mcm_bill_payment: true,
+      mcm_info_management: true,
+      mcm_transaction_status: true,
+      mcm_cut_off_time: true,
+      mcm_template_format: true,
+      mcm_help_desk: true,
       mcm_others: false,
-      mcm_sysadmin_main: false,
-      mcm_account_grouping: false,
-      mcm_user_grouping: false,
-      mcm_user_creation: false,
-      mcm_reset_password: false,
-      mcm_unlock_user: false,
-      mcm_user_still_login: false,
-      mcm_authorized_limit: false,
-      mcm_utilities: false,
+      
+      mcm_sysadmin_main: true,
+      mcm_account_grouping: true,
+      mcm_user_grouping: true,
+      mcm_user_creation: true,
+      mcm_reset_password: true,
+      mcm_unlock_user: true,
+      mcm_user_still_login: true,
+      mcm_authorized_limit: true,
+      mcm_utilities: true,
       mcm_sysadmin_others: false,
-      approval_sudah: false,
+      
+      approval_sudah: true,
       approval_belum: false
     });
     setAttendees([{ nama: '', instansiUnit: '', contact: '', keterangan: '', signature: null }]);
-    setTotalPages(0);
     setSignatureData({
       cabang: null,
       implementor: null,
@@ -1018,9 +993,6 @@ const PDFFormFiller = () => {
       nasabah: false
     });
     setIsDrawingAttendee({});
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
   };
 
   const isFormComplete = () => {
@@ -1203,78 +1175,37 @@ const PDFFormFiller = () => {
     setCheckboxes(updatedCheckboxes);
   };
 
-  const handleCheckboxChange = (e) => {
-    const { name, checked } = e.target;
-    setCheckboxes(prev => ({ ...prev, [name]: checked }));
-  };
-
   return (
     <div style={styles.container}>
       <div style={styles.wrapper}>
         <div style={styles.mainCard}>
-          <div style={styles.header}>
+          <div style={styles.header}>            
             <div>
               <h1 style={styles.title}>Berita Acara Implementasi</h1>
               <p style={styles.subtitle}>Fill PDF forms with checkboxes, data, and multiple digital signatures.</p>
             </div>
           </div>
-
           <div style={styles.content}>
-            {!pdfLibLoaded && !loadingError && (
+            {(!pdfLibLoaded || !pdfFile) && !loadingError && !pdfLoadError && (
               <div style={styles.loadingMessage}>
-                <strong>Loading PDF processing library...</strong> Please wait a moment before uploading your PDF.
+                <strong>Loading PDF template and processing library...</strong> Please wait a moment.
               </div>
             )}
             
             {loadingError && (
               <div style={styles.errorMessage}>
-                <strong>Error:</strong> {loadingError}
+                <strong>Library Error:</strong> {loadingError}
               </div>
             )}
 
-            <div>
-              <label style={styles.sectionTitle}>Upload PDF Template</label>
-              <div 
-                style={styles.uploadArea}
-                onClick={() => pdfLibLoaded && fileInputRef.current?.click()}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf"
-                  onChange={handleFileUpload}
-                  style={styles.hiddenInput}
-                  disabled={!pdfLibLoaded}
-                />
-                <div>
-                  <button 
-                    style={{
-                      ...styles.uploadButton,
-                      ...(pdfLibLoaded ? {} : styles.buttonDisabled)
-                    }}
-                    disabled={!pdfLibLoaded}
-                  >
-                    {pdfLibLoaded ? 'Choose PDF File' : 'Loading...'}
-                  </button>
-                  <p style={styles.uploadInfo}>
-                    {pdfLibLoaded ? 'or drag and drop' : 'Please wait for library to load'}
-                  </p>
-                </div>
-                {pdfFile && (
-                  <div style={styles.fileInfo}>
-                    <p style={styles.fileInfoText}>📄 {pdfFile.name}</p>
-                    {totalPages > 0 && (
-                      <p style={{...styles.fileInfoText, marginTop: '4px'}}>
-                        📄 Total pages: {totalPages}
-                      </p>
-                    )}
-                  </div>
-                )}
+            {pdfLoadError && (
+              <div style={styles.errorMessage}>
+                <strong>PDF Error:</strong> {pdfLoadError}
               </div>
-            </div>
+            )}
 
-            {pdfUrl && (
-              <div style={styles.preview}>
+            {pdfUrl && pdfFile && (
+              <div style={styles.sectionCard}>
                 <h3 style={styles.sectionTitle}>PDF Preview</h3>
                 <iframe 
                   src={pdfUrl} 
@@ -1537,17 +1468,6 @@ const PDFFormFiller = () => {
             <div style={styles.sectionCard}>
               <h3 style={styles.sectionTitle}>Instructions</h3>
               <div style={{fontSize: '14px', color: '#666', lineHeight: '1.6'}}>
-                <p><strong>How to use this PDF Form Filler:</strong></p>
-                <ol style={{paddingLeft: '20px', margin: '12px 0'}}>
-                  <li>Wait for the PDF library to load completely (you'll see a loading message)</li>
-                  <li>Upload your PDF template using the file upload button</li>
-                  <li>Fill in all the required customer and implementation information</li>
-                  <li>Select the appropriate checkboxes for the implementation syllabus</li>
-                  <li>Draw digital signatures for Cabang, Implementor, and Nasabah</li>
-                  <li>Add attendee information and their digital signatures</li>
-                  <li>Click "Generate & Download PDF" to create the filled form</li>
-                </ol>
-                
                 <p style={{marginTop: '16px'}}><strong>Tips:</strong></p>
                 <ul style={{paddingLeft: '20px', margin: '12px 0'}}>
                   <li>Make sure all required fields are filled before generating the PDF</li>
@@ -1556,9 +1476,6 @@ const PDFFormFiller = () => {
                   <li>The coordinates are pre-configured for the standard form layout</li>
                   <li>If you encounter issues, try refreshing the page and waiting for libraries to load</li>
                 </ul>
-
-                <p style={{marginTop: '16px'}}><strong>Browser Compatibility:</strong></p>
-                <p>This tool works best in modern browsers (Chrome, Firefox, Safari, Edge). Make sure JavaScript is enabled.</p>
               </div>
             </div>
           </div>
